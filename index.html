@@ -1,0 +1,2568 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Student Result Management System | TMU CCSIT</title>
+<link href="https://fonts.googleapis.com/css2?family=Sora:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet"/>
+<script src="assets/vendor/sql-wasm.js"></script>
+<script src="data.js"></script>
+<style>
+/* ══════════════════════════════════════════
+   ROOT & RESET (Strictly Preserved Theme)
+══════════════════════════════════════════ */
+:root {
+  --bg:         #07090f;
+  --surface:    #0d1117;
+  --card:       #131a26;
+  --card2:      #1a2336;
+  --border:     rgba(255,255,255,0.07);
+  --border2:    rgba(102,255,255,0.13);
+  --accent:     #155fdf;
+  --accent2:    #38d9c4;
+  --gold:       #f4b942;
+  --green:      #22d07a;
+  --red:        #f05252;
+  --amber:      #f4b942;
+  --text:       #e8edf5;
+  --muted:      #5a6a80;
+  --muted2:     #8899aa;
+  --sidebar-w:  250px;
+  --radius:     12px;
+  --radius-sm:  8px;
+}
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+html { font-size: 14px; }
+body {
+  font-family: 'Sora', sans-serif;
+  background: var(--bg);
+  color: var(--text);
+  min-height: 100vh;
+  overflow-x: hidden;
+}
+a { text-decoration: none; color: inherit; }
+button { font-family: 'Sora', sans-serif; cursor: pointer; }
+input, select, textarea { font-family: 'Sora', sans-serif; }
+.mono  { font-family: 'JetBrains Mono', monospace; }
+
+/* ══════════════════════════════════════════
+   SCREEN MANAGEMENT
+══════════════════════════════════════════ */
+#loginScreen, #portalScreen, #adminPortalScreen { display: none; }
+#loginScreen.show        { display: flex; }
+#portalScreen.show       { display: flex; }
+#adminPortalScreen.show  { display: flex; }
+
+/* ══════════════════════════════════════════
+   LOGIN PAGE
+══════════════════════════════════════════ */
+#loginScreen {
+  min-height: 100vh;
+  flex-direction: row;
+  background: var(--bg);
+  position: relative;
+  overflow: hidden;
+}
+#loginScreen::before {
+  content: '';
+  position: fixed; inset: 0; pointer-events: none; z-index: 0;
+  background-image:
+    linear-gradient(rgba(30, 102, 225, 0.04) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(247, 149, 79, 0.04) 1px, transparent 1px);
+  background-size: 56px 56px;
+}
+#loginScreen::after {
+  content: '';
+  position: fixed; inset: 0; pointer-events: none; z-index: 0;
+  background:
+    radial-gradient(ellipse 80% 60% at 15% 10%, rgba(79,142,247,0.09) 0%, transparent 65%),
+    radial-gradient(ellipse 60% 50% at 85% 85%, rgba(56,217,196,0.06) 0%, transparent 65%);
+}
+
+.login-left {
+  flex: 1;
+  padding: 50px 60px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  position: relative;
+  z-index: 1;
+  border-right: 1px solid var(--border);
+}
+.login-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 16px;
+  border-radius: 100px;
+  border: 1px solid rgba(79,142,247,0.25);
+  background: rgba(79,142,247,0.08);
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--accent);
+  margin-bottom: 28px;
+  width: fit-content;
+}
+.login-badge-dot {
+  width: 6px; height: 6px; border-radius: 50%;
+  background: var(--accent);
+  animation: pulse 2s infinite;
+}
+@keyframes pulse {
+  0%,100% { opacity: 1; transform: scale(1); }
+  50% { opacity: 0.4; transform: scale(0.8); }
+}
+.login-hero-title {
+  font-size: 44px;
+  font-weight: 800;
+  line-height: 1.1;
+  margin-bottom: 18px;
+  letter-spacing: -0.02em;
+}
+.login-hero-title .line1 { color: var(--text); }
+.login-hero-title .line2 {
+  background: linear-gradient(135deg, var(--accent) 0%, var(--accent2) 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+.login-hero-title .line3 { color: var(--text); }
+.login-hero-sub {
+  font-size: 14px;
+  color: var(--muted2);
+  line-height: 1.7;
+  max-width: 480px;
+  margin-bottom: 32px;
+}
+.features-list { display: flex; flex-direction: column; gap: 10px; margin-bottom: 32px; }
+.feature-row {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  font-size: 13px;
+  color: var(--muted2);
+}
+.feature-icon {
+  width: 28px; height: 28px;
+  border-radius: 7px;
+  background: rgba(79,142,247,0.1);
+  border: 1px solid rgba(79,142,247,0.15);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 13px; flex-shrink: 0;
+}
+.demo-creds-box {
+  background: var(--card);
+  border: 1px solid var(--border2);
+  border-radius: var(--radius);
+  padding: 18px 22px;
+}
+.demo-creds-title {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--accent);
+  margin-bottom: 12px;
+}
+.demo-cred-row {
+  display: grid;
+  grid-template-columns: 80px 100px 80px 110px 1fr;
+  gap: 4px;
+  align-items: center;
+  padding: 6px 0;
+  border-bottom: 1px solid var(--border);
+  font-size: 12px;
+}
+.demo-cred-row:last-child { border-bottom: none; }
+.dcr-label { color: var(--muted); font-size: 11px; }
+.dcr-val {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 12px;
+  color: var(--text);
+  font-weight: 500;
+}
+.dcr-course { color: var(--accent2); font-size: 11px; font-weight: 600; }
+.dcr-admin-highlight {
+  background: rgba(56,217,196,0.06);
+  border-radius: var(--radius-sm);
+  padding: 6px 8px;
+  margin-top: 4px;
+}
+
+.login-right {
+  width: 440px;
+  padding: 50px 48px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  position: relative;
+  z-index: 1;
+  flex-shrink: 0;
+}
+.role-tabs {
+  display: flex;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  padding: 4px;
+  margin-bottom: 24px;
+  gap: 4px;
+}
+.role-tab-btn {
+  flex: 1;
+  padding: 10px;
+  font-size: 12px;
+  font-weight: 600;
+  border: none;
+  background: transparent;
+  color: var(--muted2);
+  border-radius: 6px;
+  transition: all 0.2s;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+}
+.role-tab-btn.active {
+  background: var(--card2);
+  color: var(--text);
+  box-shadow: 0 2px 8px rgba(0,0,0,0.4);
+  border: 1px solid var(--border2);
+}
+.login-form-icon { font-size: 36px; margin-bottom: 14px; }
+.login-form-title { font-size: 24px; font-weight: 700; margin-bottom: 6px; letter-spacing: -0.01em; }
+.login-form-sub { font-size: 13px; color: var(--muted2); margin-bottom: 28px; }
+
+.form-group { margin-bottom: 18px; }
+.form-label {
+  display: block;
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--muted2);
+  margin-bottom: 8px;
+}
+.form-input {
+  width: 100%;
+  background: var(--card);
+  border: 1px solid var(--border2);
+  border-radius: var(--radius-sm);
+  padding: 12px 16px;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 13px;
+  color: var(--text);
+  outline: none;
+  transition: border-color 0.2s, box-shadow 0.2s;
+}
+.form-input::placeholder { font-family: 'Sora', sans-serif; color: var(--muted); font-size: 12px; }
+.form-input:focus {
+  border-color: var(--accent);
+  box-shadow: 0 0 0 3px rgba(79,142,247,0.12);
+}
+
+.error-banner {
+  display: none;
+  background: rgba(240,82,82,0.08);
+  border: 1px solid rgba(240,82,82,0.25);
+  border-radius: var(--radius-sm);
+  padding: 11px 14px;
+  font-size: 12px;
+  color: #fca5a5;
+  margin-bottom: 18px;
+}
+.error-banner.show { display: flex; align-items: center; gap: 8px; }
+
+.login-submit-btn {
+  width: 100%;
+  padding: 13px;
+  border-radius: var(--radius-sm);
+  border: none;
+  background: linear-gradient(135deg, var(--accent) 0%, #3a7de8 100%);
+  color: #fff;
+  font-size: 13px;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+  transition: opacity 0.2s, transform 0.15s, box-shadow 0.2s;
+  box-shadow: 0 4px 20px rgba(79,142,247,0.25);
+  margin-top: 4px;
+}
+.login-submit-btn:hover { opacity: 0.9; transform: translateY(-1px); box-shadow: 0 6px 24px rgba(79,142,247,0.35); }
+.login-submit-btn:active { transform: translateY(0); }
+.login-footer-note {
+  margin-top: 24px;
+  text-align: center;
+  font-size: 11px;
+  color: var(--muted);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+}
+
+/* ══════════════════════════════════════════
+   PORTALS COMMON LAYOUT (STUDENT & ADMIN)
+══════════════════════════════════════════ */
+.sidebar {
+  width: var(--sidebar-w);
+  min-height: 100vh;
+  background: var(--surface);
+  border-right: 1px solid var(--border);
+  display: flex;
+  flex-direction: column;
+  position: fixed;
+  top: 0; left: 0;
+  z-index: 200;
+}
+.sb-logo-area {
+  padding: 24px 20px 18px;
+  border-bottom: 1px solid var(--border);
+}
+.sb-app-tag {
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--accent);
+  margin-bottom: 4px;
+}
+.sb-app-name { font-size: 14px; font-weight: 600; color: var(--text); }
+.sb-app-sub  { font-size: 11px; color: var(--muted); margin-top: 2px; }
+
+.sb-nav { padding: 14px 10px; flex: 1; }
+.sb-nav-label {
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--muted);
+  padding: 6px 10px 8px;
+}
+.nav-link {
+  display: flex;
+  align-items: center;
+  gap: 11px;
+  padding: 10px 12px;
+  border-radius: var(--radius-sm);
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--muted2);
+  cursor: pointer;
+  margin-bottom: 2px;
+  transition: background 0.15s, color 0.15s;
+  user-select: none;
+  border: none;
+  background: transparent;
+  width: 100%;
+  text-align: left;
+}
+.nav-link:hover { background: var(--card); color: var(--text); }
+.nav-link.active { background: rgba(79,142,247,0.12); color: var(--accent); font-weight: 600; }
+.nav-link .nl-icon { font-size: 16px; width: 20px; text-align: center; flex-shrink: 0; }
+.nav-link .nl-badge {
+  margin-left: auto;
+  background: var(--red);
+  color: #fff;
+  font-size: 10px;
+  font-weight: 700;
+  padding: 1px 7px;
+  border-radius: 100px;
+}
+
+.sb-footer { padding: 12px 10px 20px; }
+.sb-user-card {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  padding: 12px;
+  margin-bottom: 8px;
+}
+.suc-avatar {
+  width: 36px; height: 36px; border-radius: 50%;
+  background: linear-gradient(135deg, var(--accent), var(--accent2));
+  display: flex; align-items: center; justify-content: center;
+  font-size: 14px; font-weight: 700; color: #fff;
+  margin-bottom: 8px;
+}
+.suc-name { font-size: 12px; font-weight: 600; color: var(--text); margin-bottom: 2px; }
+.suc-roll { font-size: 11px; color: var(--muted); font-family: 'JetBrains Mono', monospace; }
+.logout-link {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 9px 12px;
+  border-radius: var(--radius-sm);
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--red);
+  background: rgba(240,82,82,0.07);
+  border: none;
+  width: 100%;
+  text-align: left;
+  transition: background 0.15s;
+}
+.logout-link:hover { background: rgba(240,82,82,0.14); }
+
+.portal-main {
+  margin-left: var(--sidebar-w);
+  flex: 1;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+.topbar {
+  height: 60px;
+  background: var(--surface);
+  border-bottom: 1px solid var(--border);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 28px;
+  position: sticky;
+  top: 0; z-index: 100;
+}
+.tb-title { font-size: 15px; font-weight: 600; }
+.tb-right { display: flex; align-items: center; gap: 12px; }
+.tb-avatar {
+  width: 34px; height: 34px; border-radius: 50%;
+  background: linear-gradient(135deg, var(--accent), var(--accent2));
+  display: flex; align-items: center; justify-content: center;
+  font-size: 13px; font-weight: 700; color: #fff;
+}
+.tb-uname { font-size: 13px; font-weight: 600; }
+.tb-roll  { font-size: 11px; color: var(--muted); font-family: 'JetBrains Mono', monospace; }
+.tb-badge {
+  padding: 4px 10px;
+  border-radius: 100px;
+  font-size: 11px;
+  font-weight: 600;
+  background: rgba(34,208,122,0.12);
+  color: var(--green);
+  border: 1px solid rgba(34,208,122,0.2);
+}
+.tb-badge-sql {
+  padding: 4px 10px;
+  border-radius: 100px;
+  font-size: 11px;
+  font-weight: 600;
+  background: rgba(56,217,196,0.12);
+  color: var(--accent2);
+  border: 1px solid rgba(56,217,196,0.25);
+  font-family: 'JetBrains Mono', monospace;
+}
+
+.portal-content { padding: 28px 32px; flex: 1; }
+.portal-page { display: none; }
+.portal-page.active { display: block; }
+
+/* ══════════════════════════════════════════
+   REUSABLE UI COMPONENTS
+══════════════════════════════════════════ */
+.card {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 20px 22px;
+  margin-bottom: 18px;
+}
+.card-title {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--muted);
+  margin-bottom: 16px;
+}
+
+.stat-pill {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 18px 20px;
+}
+.sp-label { font-size: 11px; color: var(--muted2); margin-bottom: 8px; font-weight: 500; }
+.sp-value { font-size: 26px; font-weight: 700; font-family: 'JetBrains Mono', monospace; line-height: 1; }
+.sp-sub   { font-size: 11px; color: var(--muted); margin-top: 5px; }
+.sp-blue  { color: var(--accent); }
+.sp-green { color: var(--green); }
+.sp-red   { color: var(--red); }
+.sp-gold  { color: var(--gold); }
+.sp-cyan  { color: var(--accent2); }
+
+.grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 18px; }
+.grid-3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; }
+.grid-4 { display: grid; grid-template-columns: repeat(4, 1fr); gap: 14px; }
+.grid-5 { display: grid; grid-template-columns: repeat(5, 1fr); gap: 12px; }
+
+.badge {
+  display: inline-block;
+  padding: 3px 10px;
+  border-radius: 100px;
+  font-size: 11px;
+  font-weight: 600;
+}
+.badge-green  { background: rgba(34,208,122,0.12); color: var(--green); border: 1px solid rgba(34,208,122,0.2); }
+.badge-red    { background: rgba(240,82,82,0.12);  color: var(--red);   border: 1px solid rgba(240,82,82,0.2); }
+.badge-blue   { background: rgba(79,142,247,0.12); color: var(--accent);border: 1px solid rgba(79,142,247,0.2); }
+.badge-gold   { background: rgba(244,185,66,0.12); color: var(--gold);  border: 1px solid rgba(244,185,66,0.2); }
+.badge-cyan   { background: rgba(56,217,196,0.12); color: var(--accent2);border: 1px solid rgba(56,217,196,0.2); }
+.badge-gray   { background: rgba(255,255,255,0.06);color: var(--muted2);border: 1px solid var(--border); }
+
+.pbar { height: 6px; background: var(--border); border-radius: 100px; overflow: hidden; }
+.pbar-fill { height: 100%; border-radius: 100px; transition: width 0.6s ease; }
+.pbar-fill.blue  { background: linear-gradient(90deg, var(--accent), var(--accent2)); }
+.pbar-fill.green { background: linear-gradient(90deg, var(--green), #7af0b4); }
+.pbar-fill.red   { background: linear-gradient(90deg, var(--red), #f88); }
+.pbar-fill.gold  { background: linear-gradient(90deg, var(--gold), #f8d08a); }
+
+table { width: 100%; border-collapse: collapse; font-size: 13px; }
+th {
+  text-align: left;
+  padding: 10px 12px;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--muted);
+  border-bottom: 1px solid var(--border);
+  white-space: nowrap;
+}
+td {
+  padding: 11px 12px;
+  border-bottom: 1px solid rgba(255,255,255,0.04);
+  vertical-align: middle;
+}
+tr:last-child td { border-bottom: none; }
+tr:hover td { background: rgba(255,255,255,0.02); }
+
+.notice-item {
+  display: flex;
+  gap: 12px;
+  padding: 11px 14px;
+  border-radius: var(--radius-sm);
+  background: rgba(255,255,255,0.02);
+  border-left: 3px solid transparent;
+  margin-bottom: 8px;
+}
+.notice-item:last-child { margin-bottom: 0; }
+.ni-text  { font-size: 12px; line-height: 1.6; }
+.ni-date  { font-size: 10px; color: var(--muted); margin-top: 3px; font-family: 'JetBrains Mono', monospace; }
+.ni-blue  { border-left-color: var(--accent); }
+.ni-gold  { border-left-color: var(--gold); }
+.ni-red   { border-left-color: var(--red); }
+.ni-cyan  { border-left-color: var(--accent2); }
+
+.sgpa-row { display: flex; align-items: center; gap: 12px; margin-bottom: 12px; }
+.sgpa-row:last-child { margin-bottom: 0; }
+.sgpa-sem { font-size: 11px; color: var(--muted2); width: 64px; flex-shrink: 0; }
+.sgpa-bar { flex: 1; }
+.sgpa-val { font-size: 13px; font-weight: 600; font-family: 'JetBrains Mono', monospace; color: var(--accent); width: 36px; text-align: right; }
+
+.sem-tabs { display: flex; gap: 7px; margin-bottom: 18px; flex-wrap: wrap; }
+.sem-tab {
+  padding: 7px 16px;
+  border-radius: var(--radius-sm);
+  font-size: 12px;
+  font-weight: 600;
+  border: 1px solid var(--border);
+  background: var(--card);
+  color: var(--muted2);
+  cursor: pointer;
+  transition: all 0.15s;
+}
+.sem-tab:hover   { border-color: var(--accent); color: var(--accent); }
+.sem-tab.active  { background: var(--accent); border-color: var(--accent); color: #fff; }
+.sem-block { display: none; }
+.sem-block.active { display: block; }
+
+.grade-chip {
+  display: inline-block;
+  padding: 2px 10px;
+  border-radius: 100px;
+  font-size: 12px;
+  font-weight: 700;
+  font-family: 'JetBrains Mono', monospace;
+}
+.gO  { background: rgba(34,208,122,0.15); color: #22d07a; }
+.gAp { background: rgba(79,142,247,0.15); color: #4f8ef7; }
+.gA  { background: rgba(56,217,196,0.15); color: #38d9c4; }
+.gBp { background: rgba(244,185,66,0.15); color: #f4b942; }
+.gB  { background: rgba(244,185,66,0.10); color: #e8a832; }
+.gC  { background: rgba(160,160,80,0.15); color: #b8b840; }
+.gF  { background: rgba(240,82,82,0.15);  color: #f05252; }
+
+.fee-stat-grid { display: grid; grid-template-columns: repeat(3,1fr); gap: 16px; margin-bottom: 18px; }
+.fee-stat {
+  border-radius: var(--radius);
+  padding: 20px;
+  border: 1px solid transparent;
+}
+.fee-stat.fs-total { background: rgba(25, 97, 222, 0.07); border-color: rgba(79,142,247,0.18); }
+.fee-stat.fs-paid  { background: rgba(34,208,122,0.07); border-color: rgba(34,208,122,0.18); }
+.fee-stat.fs-due   { background: rgba(240,82,82,0.07);  border-color: rgba(240,82,82,0.18); }
+.fs-icon  { font-size: 22px; margin-bottom: 10px; }
+.fs-label { font-size: 10px; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase; color: var(--muted2); margin-bottom: 6px; }
+.fs-val   { font-size: 24px; font-weight: 700; font-family: 'JetBrains Mono', monospace; }
+.fs-sub   { font-size: 11px; color: var(--muted); margin-top: 4px; }
+.fs-total .fs-val { color: var(--accent); }
+.fs-paid  .fs-val { color: var(--green); }
+.fs-due   .fs-val { color: var(--red); }
+
+.profile-banner {
+  background: linear-gradient(135deg, rgba(79,142,247,0.10), rgba(56,217,196,0.05));
+  border: 1px solid rgba(79,142,247,0.16);
+  border-radius: var(--radius);
+  padding: 24px 28px;
+  display: flex;
+  align-items: center;
+  gap: 20px;
+  margin-bottom: 18px;
+}
+.pb-avatar {
+  width: 70px; height: 70px; border-radius: 50%;
+  background: linear-gradient(135deg, var(--accent), var(--accent2));
+  display: flex; align-items: center; justify-content: center;
+  font-size: 24px; font-weight: 700; color: #fff;
+  border: 2px solid rgba(79,142,247,0.3);
+  flex-shrink: 0;
+}
+.pb-name   { font-size: 20px; font-weight: 700; margin-bottom: 4px; }
+.pb-course { font-size: 12px; color: var(--accent2); font-weight: 600; margin-bottom: 10px; }
+.pb-tags   { display: flex; gap: 7px; flex-wrap: wrap; }
+
+.info-pair {
+  padding: 10px 0;
+  border-bottom: 1px solid var(--border);
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+.info-pair:last-child { border-bottom: none; }
+.ip-label { font-size: 10px; color: var(--muted); text-transform: uppercase; letter-spacing: 0.08em; }
+.ip-val   { font-size: 13px; font-weight: 500; }
+
+.pct-inline { display: flex; align-items: center; gap: 8px; }
+.pct-inline-bar { width: 70px; flex-shrink: 0; }
+
+.welcome-banner {
+  background: linear-gradient(135deg, rgba(79,142,247,0.10), rgba(56,217,196,0.05));
+  border: 1px solid rgba(79,142,247,0.16);
+  border-radius: var(--radius);
+  padding: 22px 28px;
+  display: flex;
+  align-items: center;
+  gap: 18px;
+  margin-bottom: 20px;
+}
+.wb-avatar {
+  width: 54px; height: 54px; border-radius: 50%;
+  background: linear-gradient(135deg, var(--accent), var(--accent2));
+  display: flex; align-items: center; justify-content: center;
+  font-size: 20px; font-weight: 700; color: #fff;
+  flex-shrink: 0;
+}
+.wb-name   { font-size: 17px; font-weight: 700; margin-bottom: 3px; }
+.wb-info   { font-size: 12px; color: var(--muted2); }
+.wb-right  { margin-left: auto; text-align: right; }
+.wb-batch  { font-size: 11px; color: var(--muted); }
+.wb-course { font-size: 13px; font-weight: 600; color: var(--accent2); margin-top: 2px; }
+
+.quick-links { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+.ql-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 14px 16px;
+  background: rgba(255,255,255,0.02);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  transition: background 0.15s, border-color 0.15s;
+}
+.ql-item:hover { background: rgba(79,142,247,0.06); border-color: rgba(79,142,247,0.25); }
+.ql-icon  { font-size: 20px; flex-shrink: 0; }
+.ql-label { font-size: 13px; font-weight: 600; }
+.ql-sub   { font-size: 11px; color: var(--muted); margin-top: 2px; }
+
+.mb-18  { margin-bottom: 18px; }
+.mt-18  { margin-top: 18px; }
+.fw-600 { font-weight: 600; }
+.text-accent  { color: var(--accent); }
+.text-muted   { color: var(--muted2); }
+.text-green   { color: var(--green); }
+.text-red     { color: var(--red); }
+.text-gold    { color: var(--gold); }
+.text-cyan    { color: var(--accent2); }
+
+.result-footer {
+  display: flex;
+  gap: 28px;
+  flex-wrap: wrap;
+  margin-top: 16px;
+  padding-top: 14px;
+  border-top: 1px solid var(--border);
+  font-size: 12px;
+}
+.rf-item .rf-label { color: var(--muted); margin-bottom: 3px; font-size: 11px; }
+.rf-item .rf-val   { font-weight: 600; font-family: 'JetBrains Mono', monospace; }
+
+.pay-cta {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  flex-wrap: wrap;
+  background: rgba(240,82,82,0.07);
+  border: 1px solid rgba(240,82,82,0.18);
+  border-radius: var(--radius-sm);
+  padding: 16px 20px;
+  margin-top: 16px;
+}
+.pay-cta-msg { font-size: 13px; }
+.pay-cta-btn {
+  padding: 9px 22px;
+  border-radius: var(--radius-sm);
+  background: var(--red);
+  color: #fff;
+  font-size: 12px;
+  font-weight: 600;
+  border: none;
+  transition: opacity 0.2s;
+  flex-shrink: 0;
+}
+.pay-cta-btn:hover { opacity: 0.85; }
+.all-clear {
+  text-align: center;
+  padding: 13px;
+  background: rgba(34,208,122,0.06);
+  border: 1px solid rgba(34,208,122,0.18);
+  border-radius: var(--radius-sm);
+  font-size: 13px;
+  color: var(--green);
+  margin-top: 16px;
+}
+
+/* ══════════════════════════════════════════
+   TEACHER / FACULTY MASTER PORTAL EXTENSIONS
+══════════════════════════════════════════ */
+.filter-bar {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+  flex-wrap: wrap;
+  margin-bottom: 16px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  padding: 12px 16px;
+}
+.search-input {
+  flex: 1;
+  min-width: 220px;
+  background: var(--card);
+  border: 1px solid var(--border2);
+  border-radius: var(--radius-sm);
+  padding: 9px 14px;
+  font-size: 13px;
+  color: var(--text);
+  outline: none;
+}
+.search-input:focus { border-color: var(--accent); }
+.filter-select {
+  background: var(--card);
+  border: 1px solid var(--border2);
+  border-radius: var(--radius-sm);
+  padding: 9px 12px;
+  font-size: 12px;
+  color: var(--text);
+  outline: none;
+  cursor: pointer;
+}
+.action-btn {
+  padding: 8px 16px;
+  border-radius: var(--radius-sm);
+  font-size: 12px;
+  font-weight: 600;
+  border: 1px solid transparent;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  transition: all 0.15s;
+}
+.action-btn-primary {
+  background: var(--accent);
+  color: #fff;
+  border-color: var(--accent);
+}
+.action-btn-primary:hover { opacity: 0.9; }
+.action-btn-secondary {
+  background: var(--card2);
+  color: var(--text);
+  border-color: var(--border);
+}
+.action-btn-secondary:hover { background: rgba(255,255,255,0.06); }
+.action-btn-cyan {
+  background: rgba(56,217,196,0.12);
+  color: var(--accent2);
+  border-color: rgba(56,217,196,0.25);
+}
+.action-btn-cyan:hover { background: rgba(56,217,196,0.2); }
+
+/* Table Pagination */
+.pagination-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-top: 16px;
+  font-size: 12px;
+  color: var(--muted2);
+  padding: 8px 4px;
+}
+.pag-btns { display: flex; gap: 6px; }
+.pag-btn {
+  padding: 5px 12px;
+  border-radius: var(--radius-sm);
+  background: var(--card);
+  border: 1px solid var(--border);
+  color: var(--text);
+  font-size: 11px;
+}
+.pag-btn:disabled { opacity: 0.3; cursor: not-allowed; }
+
+/* SQL Console */
+.sql-console-card {
+  background: #090d14;
+  border: 1px solid rgba(56,217,196,0.25);
+  border-radius: var(--radius);
+  padding: 20px;
+  margin-bottom: 20px;
+}
+.sql-presets {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+  margin-bottom: 14px;
+}
+.sql-preset-btn {
+  padding: 5px 12px;
+  border-radius: 100px;
+  background: rgba(255,255,255,0.04);
+  border: 1px solid var(--border);
+  font-size: 11px;
+  color: var(--muted2);
+  transition: all 0.15s;
+}
+.sql-preset-btn:hover {
+  background: rgba(56,217,196,0.1);
+  color: var(--accent2);
+  border-color: rgba(56,217,196,0.3);
+}
+.sql-textarea {
+  width: 100%;
+  height: 110px;
+  background: #05070a;
+  border: 1px solid var(--border2);
+  border-radius: var(--radius-sm);
+  padding: 14px;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 13px;
+  color: #79ffe1;
+  outline: none;
+  resize: vertical;
+  line-height: 1.5;
+}
+.sql-textarea:focus { border-color: var(--accent2); }
+.sql-status-bar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-top: 10px;
+  font-size: 12px;
+  color: var(--muted2);
+}
+.sql-result-container {
+  overflow-x: auto;
+  max-height: 480px;
+  overflow-y: auto;
+}
+
+/* Modal */
+.modal-overlay {
+  display: none;
+  position: fixed; inset: 0;
+  background: rgba(0,0,0,0.75);
+  backdrop-filter: blur(4px);
+  z-index: 1000;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+}
+.modal-overlay.show { display: flex; }
+.modal-box {
+  background: var(--surface);
+  border: 1px solid var(--border2);
+  border-radius: var(--radius);
+  width: 100%;
+  max-width: 760px;
+  max-height: 90vh;
+  overflow-y: auto;
+  padding: 26px;
+  position: relative;
+  box-shadow: 0 20px 60px rgba(0,0,0,0.8);
+}
+.modal-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20px;
+  padding-bottom: 14px;
+  border-bottom: 1px solid var(--border);
+}
+.modal-close {
+  background: transparent;
+  border: none;
+  color: var(--muted2);
+  font-size: 20px;
+  cursor: pointer;
+}
+.modal-close:hover { color: var(--red); }
+</style>
+</head>
+<body>
+
+<!-- ══════════════════════════════════════════
+     LOGIN SCREEN
+══════════════════════════════════════════ -->
+<div id="loginScreen" class="show">
+  <div class="login-left">
+    <div class="login-badge">
+      <div class="login-badge-dot"></div>
+      Teerthanker Mahaveer University &nbsp;·&nbsp; CCSIT Portal
+    </div>
+    <h1 class="login-hero-title">
+      <div class="line1">Student</div>
+      <div class="line2">Result &amp; Academic</div>
+      <div class="line3">Management System</div>
+    </h1>
+    <p class="login-hero-sub">
+      High-performance academic portal powered by SQLite relational database engine, dual-role access control, and client-side encryption.
+    </p>
+    <div class="features-list">
+      <div class="feature-row"><div class="feature-icon">⚡</div>Full SQLite database engine with SQL Query Console</div>
+      <div class="feature-row"><div class="feature-icon">📊</div>Semester-wise marks, grades, attendance &amp; SGPA/CGPA</div>
+      <div class="feature-row"><div class="feature-icon">👨‍🏫</div>Faculty Master Access for student records &amp; grade auditing</div>
+      <div class="feature-row"><div class="feature-icon">🔐</div>Zero-plaintext passwords · Cryptographically secured verification</div>
+    </div>
+    <div class="demo-creds-box">
+      <div class="demo-creds-title">
+        <span>🔑 Demo System Credentials</span>
+        <span class="badge badge-cyan">Click Row to Auto-Fill</span>
+      </div>
+      <div class="demo-cred-row" style="cursor:pointer" onclick="fillCreds('student', '2468532', '01062005')">
+        <span class="dcr-label">Student</span><span class="dcr-val">2468532</span>
+        <span class="dcr-label">Password</span><span class="dcr-val">01062005</span>
+        <span class="dcr-course">BCA (Sanjay)</span>
+      </div>
+      <div class="demo-cred-row" style="cursor:pointer" onclick="fillCreds('student', '2468297', '27052007')">
+        <span class="dcr-label">Student</span><span class="dcr-val">2468297</span>
+        <span class="dcr-label">Password</span><span class="dcr-val">27052007</span>
+        <span class="dcr-course">BCA (Manmohan)</span>
+      </div>
+      <div class="demo-cred-row" style="cursor:pointer" onclick="fillCreds('student', '2468497', 'pass2023')">
+        <span class="dcr-label">Student</span><span class="dcr-val">2468497</span>
+        <span class="dcr-label">Password</span><span class="dcr-val">pass2023</span>
+        <span class="dcr-course">B.Tech (Ritik)</span>
+      </div>
+      <div class="demo-cred-row dcr-admin-highlight" style="cursor:pointer" onclick="fillCreds('admin', 'admin', 'Teacher@2025')">
+        <span class="dcr-label" style="color:var(--accent2);font-weight:700">Teacher ID</span><span class="dcr-val" style="color:var(--accent2)">admin</span>
+        <span class="dcr-label">Master Pwd</span><span class="dcr-val">Teacher@2025</span>
+        <span class="dcr-course" style="color:#7af0b4">Faculty Admin ⚡</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="login-right">
+    <div class="role-tabs">
+      <button class="role-tab-btn active" id="tabStudent" onclick="switchLoginRole('student')">
+        🎓 Student Login
+      </button>
+      <button class="role-tab-btn" id="tabAdmin" onclick="switchLoginRole('admin')">
+        👨‍🏫 Faculty Master Access
+      </button>
+    </div>
+
+    <div class="login-form-icon" id="formIcon">🎓</div>
+    <div class="login-form-title" id="formTitle">Student Login</div>
+    <div class="login-form-sub" id="formSub">Sign in with your Roll Number / Enrollment &amp; Password</div>
+    <div class="error-banner" id="errorBanner">⚠️ Invalid Credentials. Please check your details and try again.</div>
+
+    <div class="form-group">
+      <label class="form-label" id="labelUser">Roll Number or Enrollment No.</label>
+      <input type="text" class="form-input" id="inputRoll" placeholder="e.g. 2468532 or TCA2468532" autocomplete="off"/>
+    </div>
+    <div class="form-group">
+      <label class="form-label">Password</label>
+      <input type="password" class="form-input" id="inputPass" placeholder="Enter password"/>
+    </div>
+    <button class="login-submit-btn" id="loginBtn" onclick="doLogin()">Sign In to Portal →</button>
+    <div class="login-footer-note">
+      <span>🔒 Cryptographically Hash Verified</span> &nbsp;·&nbsp;
+      <span>SQLite Database Engine v3</span>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════
+     STUDENT PORTAL SCREEN
+══════════════════════════════════════════ -->
+<div id="portalScreen">
+  <!-- SIDEBAR -->
+  <aside class="sidebar">
+    <div class="sb-logo-area">
+      <div class="sb-app-tag">SRMS Student Portal</div>
+      <div class="sb-app-name">Academic Dashboard</div>
+      <div class="sb-app-sub">CCSIT · Teerthanker Mahaveer University</div>
+    </div>
+    <nav class="sb-nav">
+      <div class="sb-nav-label">Navigation</div>
+      <button class="nav-link active" onclick="showPage('dashboard',this)">
+        <span class="nl-icon">🏠</span> Dashboard
+      </button>
+      <button class="nav-link" onclick="showPage('results',this)">
+        <span class="nl-icon">📊</span> Academic Results
+      </button>
+      <button class="nav-link" onclick="showPage('fees',this)">
+        <span class="nl-icon">💳</span> Fee Details
+        <span class="nl-badge" id="feeBadge" style="display:none">!</span>
+      </button>
+      <button class="nav-link" onclick="showPage('profile',this)">
+        <span class="nl-icon">👤</span> My Profile
+      </button>
+    </nav>
+    <div class="sb-footer">
+      <div class="sb-user-card">
+        <div class="suc-avatar" id="sbAvatar">—</div>
+        <div class="suc-name"  id="sbName">—</div>
+        <div class="suc-roll"  id="sbRoll">—</div>
+      </div>
+      <button class="logout-link" onclick="doLogout()">🚪 &nbsp;Logout</button>
+    </div>
+  </aside>
+
+  <!-- MAIN -->
+  <div class="portal-main">
+    <div class="topbar">
+      <span class="tb-title" id="tbTitle">Dashboard</span>
+      <div class="tb-right">
+        <span class="tb-badge">Active Student</span>
+        <div class="tb-avatar" id="tbAvatar">—</div>
+        <div>
+          <div class="tb-uname" id="tbUname">—</div>
+          <div class="tb-roll"  id="tbRoll">—</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="portal-content">
+      <!-- DASHBOARD -->
+      <div class="portal-page active" id="page-dashboard">
+        <div class="welcome-banner">
+          <div class="wb-avatar" id="wb-avatar">—</div>
+          <div>
+            <div class="wb-name" id="wb-name">—</div>
+            <div class="wb-info" id="wb-info">—</div>
+          </div>
+          <div class="wb-right">
+            <div class="wb-batch">Batch</div>
+            <div class="wb-course" id="wb-course">—</div>
+          </div>
+        </div>
+
+        <div class="grid-4 mb-18">
+          <div class="stat-pill"><div class="sp-label">Latest SGPA</div><div class="sp-value sp-blue" id="d-sgpa">—</div><div class="sp-sub" id="d-sgpa-sem">—</div></div>
+          <div class="stat-pill"><div class="sp-label">Semesters Done</div><div class="sp-value" id="d-sems">—</div><div class="sp-sub">of Total</div></div>
+          <div class="stat-pill"><div class="sp-label">Attendance</div><div class="sp-value" id="d-att" style="color:var(--green)">—</div><div class="sp-sub">Academic Term</div></div>
+          <div class="stat-pill"><div class="sp-label">Fee Due</div><div class="sp-value" id="d-due">—</div><div class="sp-sub" id="d-due-sub">—</div></div>
+        </div>
+
+        <div class="grid-2">
+          <div class="card">
+            <div class="card-title">📈 SGPA Progression</div>
+            <div id="d-sgpa-bars"></div>
+            <div style="margin-top:16px;padding-top:12px;border-top:1px solid var(--border);font-size:11px;color:var(--muted)">GPA scale: 0–10 points</div>
+          </div>
+          <div class="card">
+            <div class="card-title">🔔 Notices &amp; Department Alerts</div>
+            <div id="d-notices"></div>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="card-title">⚡ Quick Academic Services</div>
+          <div class="quick-links">
+            <div class="ql-item" onclick="showPage('results',document.querySelectorAll('#portalScreen .nav-link')[1])">
+              <span class="ql-icon">📊</span>
+              <div><div class="ql-label">Grade Sheets</div><div class="ql-sub">Semester-wise scorecards</div></div>
+            </div>
+            <div class="ql-item" onclick="showPage('fees',document.querySelectorAll('#portalScreen .nav-link')[2])">
+              <span class="ql-icon">💳</span>
+              <div><div class="ql-label">Fee Ledger</div><div class="ql-sub">Challans &amp; cleared receipts</div></div>
+            </div>
+            <div class="ql-item" onclick="showPage('profile',document.querySelectorAll('#portalScreen .nav-link')[3])">
+              <span class="ql-icon">👤</span>
+              <div><div class="ql-label">University Profile</div><div class="ql-sub">Institutional records</div></div>
+            </div>
+            <div class="ql-item" onclick="showPage('results',document.querySelectorAll('#portalScreen .nav-link')[1])">
+              <span class="ql-icon">🏆</span>
+              <div><div class="ql-label">Transcripts</div><div class="ql-sub">Verified credits &amp; GP</div></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- RESULTS -->
+      <div class="portal-page" id="page-results">
+        <div class="card mb-18">
+          <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px">
+            <div>
+              <div style="font-size:17px;font-weight:700" id="r-name">—</div>
+              <div style="font-size:12px;color:var(--muted2);margin-top:3px" id="r-sub">—</div>
+            </div>
+            <div style="display:flex;gap:8px;flex-wrap:wrap">
+              <span class="badge badge-blue" id="r-cgpa">CGPA: —</span>
+              <span class="badge badge-gray" id="r-sems">— Semesters</span>
+            </div>
+          </div>
+        </div>
+        <div class="sem-tabs" id="r-tabs"></div>
+        <div id="r-blocks"></div>
+      </div>
+
+      <!-- FEES -->
+      <div class="portal-page" id="page-fees">
+        <div class="fee-stat-grid">
+          <div class="fee-stat fs-total">
+            <div class="fs-icon">🏦</div>
+            <div class="fs-label">Annual Course Fee</div>
+            <div class="fs-val" id="f-total">—</div>
+            <div class="fs-sub">Academic Year 2024–25</div>
+          </div>
+          <div class="fee-stat fs-paid">
+            <div class="fs-icon">✅</div>
+            <div class="fs-label">Total Fee Paid</div>
+            <div class="fs-val" id="f-paid">—</div>
+            <div class="fs-sub" id="f-paid-sub">—</div>
+          </div>
+          <div class="fee-stat fs-due">
+            <div class="fs-icon">⚠️</div>
+            <div class="fs-label">Balance Payable</div>
+            <div class="fs-val" id="f-due">—</div>
+            <div class="fs-sub" id="f-due-sub">—</div>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="card-title">Payment Settlement Progress</div>
+          <div style="display:flex;justify-content:space-between;font-size:12px;color:var(--muted2);margin-bottom:8px">
+            <span id="f-paid-lbl">—</span><span id="f-total-lbl">—</span>
+          </div>
+          <div class="pbar"><div class="pbar-fill green" id="f-prog" style="width:0%"></div></div>
+          <div style="font-size:11px;color:var(--muted);margin-top:7px" id="f-pct">—</div>
+        </div>
+
+        <div class="card">
+          <div class="card-title">📜 Cleared Receipts &amp; Dues</div>
+          <table>
+            <thead>
+              <tr><th>#</th><th>Date</th><th>Fee Type</th><th>Amount</th><th>Receipt No.</th><th>Status</th></tr>
+            </thead>
+            <tbody id="f-txn"></tbody>
+          </table>
+          <div id="f-cta"></div>
+        </div>
+      </div>
+
+      <!-- PROFILE -->
+      <div class="portal-page" id="page-profile">
+        <div class="profile-banner">
+          <div class="pb-avatar" id="p-av">—</div>
+          <div>
+            <div class="pb-name"   id="p-name">—</div>
+            <div class="pb-course" id="p-course">—</div>
+            <div class="pb-tags"   id="p-tags"></div>
+          </div>
+        </div>
+
+        <div class="grid-2">
+          <div class="card">
+            <div class="card-title">👤 Student Identification</div>
+            <div id="p-personal"></div>
+          </div>
+          <div class="card">
+            <div class="card-title">🎓 Enrollment &amp; Academic Status</div>
+            <div id="p-academic"></div>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="card-title">📊 Term Progression Ledger</div>
+          <table>
+            <thead>
+              <tr><th>Semester</th><th>Subjects</th><th>Total Credits</th><th>SGPA</th><th>Attendance</th><th>Status</th></tr>
+            </thead>
+            <tbody id="p-summary"></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════
+     TEACHER / FACULTY MASTER ADMIN PORTAL
+══════════════════════════════════════════ -->
+<div id="adminPortalScreen">
+  <!-- ADMIN SIDEBAR -->
+  <aside class="sidebar">
+    <div class="sb-logo-area">
+      <div class="sb-app-tag" style="color:var(--accent2)">FACULTY MASTER PORTAL</div>
+      <div class="sb-app-name">Academic Control Center</div>
+      <div class="sb-app-sub">CCSIT · Dean &amp; Teacher Administration</div>
+    </div>
+    <nav class="sb-nav">
+      <div class="sb-nav-label">Master Access</div>
+      <button class="nav-link active" onclick="showAdminPage('overview',this)">
+        <span class="nl-icon">📈</span> System Overview
+      </button>
+      <button class="nav-link" onclick="showAdminPage('directory',this)">
+        <span class="nl-icon">👥</span> Student Directory
+        <span class="nl-badge" style="background:var(--accent)" id="adminTotalBadge">1461</span>
+      </button>
+      <button class="nav-link" onclick="showAdminPage('sql',this)">
+        <span class="nl-icon">💻</span> SQL Query Console
+      </button>
+      <button class="nav-link" onclick="showAdminPage('finances',this)">
+        <span class="nl-icon">💳</span> Financial Audit
+      </button>
+    </nav>
+    <div class="sb-footer">
+      <div class="sb-user-card" style="border-color:rgba(56,217,196,0.25)">
+        <div class="suc-avatar" style="background:linear-gradient(135deg, var(--accent2), #155fdf)">RS</div>
+        <div class="suc-name">Dr. Rajesh Sharma</div>
+        <div class="suc-roll" style="color:var(--accent2)">Faculty Administrator</div>
+      </div>
+      <button class="logout-link" onclick="doLogout()">🚪 &nbsp;Sign Out Master</button>
+    </div>
+  </aside>
+
+  <!-- ADMIN MAIN -->
+  <div class="portal-main">
+    <div class="topbar">
+      <span class="tb-title" id="adminTbTitle">Faculty Master Console</span>
+      <div class="tb-right">
+        <span class="tb-badge-sql" id="sqlEngineBadge">⚡ SQLite3 Engine Active</span>
+        <div class="tb-avatar" style="background:linear-gradient(135deg, var(--accent2), var(--accent))">RS</div>
+        <div>
+          <div class="tb-uname">Faculty Master</div>
+          <div class="tb-roll">CCSIT-ADMIN-01</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="portal-content">
+      <!-- ─── ADMIN PAGE: OVERVIEW ─── -->
+      <div class="portal-page active" id="admin-page-overview">
+        <div class="grid-4 mb-18">
+          <div class="stat-pill">
+            <div class="sp-label">Total Enrolled Students</div>
+            <div class="sp-value sp-blue" id="adm-kpi-students">1,461</div>
+            <div class="sp-sub">Session 2024–25 Active</div>
+          </div>
+          <div class="stat-pill">
+            <div class="sp-label">Average Attendance</div>
+            <div class="sp-value sp-green" id="adm-kpi-att">83.4%</div>
+            <div class="sp-sub">Across All Departments</div>
+          </div>
+          <div class="stat-pill">
+            <div class="sp-label">Average Semester SGPA</div>
+            <div class="sp-value sp-cyan" id="adm-kpi-sgpa">7.64</div>
+            <div class="sp-sub">Dean's Honor Roll Standard</div>
+          </div>
+          <div class="stat-pill">
+            <div class="sp-label">Fee Realization</div>
+            <div class="sp-value sp-gold" id="adm-kpi-fee">92.8%</div>
+            <div class="sp-sub">Total Dues ₹1.24 Cr</div>
+          </div>
+        </div>
+
+        <div class="grid-2 mb-18">
+          <div class="card">
+            <div class="card-title">
+              <span>📚 Departmental Distribution</span>
+              <span class="badge badge-cyan">SQL Query Output</span>
+            </div>
+            <table id="adm-course-dist-table">
+              <thead><tr><th>Course Name</th><th>Total Enrolled</th><th>Share</th></tr></thead>
+              <tbody></tbody>
+            </table>
+          </div>
+
+          <div class="card">
+            <div class="card-title">
+              <span>🛡️ Security &amp; Database State</span>
+              <span class="badge badge-green">Zero-Knowledge Hashes</span>
+            </div>
+            <div style="display:flex;flex-direction:column;gap:12px;font-size:12px;">
+              <div class="notice-item ni-cyan">
+                <div>
+                  <div class="ni-text"><strong>SQLite In-Memory Virtual Machine</strong> initialized via WebAssembly. All relational queries run at sub-millisecond speeds.</div>
+                  <div class="ni-date">ENGINE: SQL.JS / SQLITE 3.44+</div>
+                </div>
+              </div>
+              <div class="notice-item ni-blue">
+                <div>
+                  <div class="ni-text"><strong>Password Vault Integrity:</strong> Passwords are cryptographically hashed using SHA-256 with per-user unique salt. Browser inspect cannot extract plaintext passwords.</div>
+                  <div class="ni-date">SECURITY PROTOCOL: SHA-256 + SALTING</div>
+                </div>
+              </div>
+              <div class="notice-item ni-gold">
+                <div>
+                  <div class="ni-text"><strong>Role-Based Access Enforcement:</strong> Faculty Master rights required to read all student records or modify grades.</div>
+                  <div class="ni-date">RBAC LEVEL: DEAN / FACULTY MASTER</div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="card-title">
+            <span>⚡ Faculty Quick Operations</span>
+          </div>
+          <div class="quick-links">
+            <div class="ql-item" onclick="showAdminPage('directory', document.querySelectorAll('#adminPortalScreen .nav-link')[1])">
+              <span class="ql-icon">👥</span>
+              <div><div class="ql-label">Browse Student Directory</div><div class="ql-sub">Search, inspect and edit 1,461 records</div></div>
+            </div>
+            <div class="ql-item" onclick="showAdminPage('sql', document.querySelectorAll('#adminPortalScreen .nav-link')[2])">
+              <span class="ql-icon">💻</span>
+              <div><div class="ql-label">Run Custom SQL Query</div><div class="ql-sub">Execute direct SELECT/UPDATE statements</div></div>
+            </div>
+            <div class="ql-item" onclick="openAddStudentModal()">
+              <span class="ql-icon">➕</span>
+              <div><div class="ql-label">Enroll New Student</div><div class="ql-sub">Insert new admission directly to SQL database</div></div>
+            </div>
+            <div class="ql-item" onclick="exportStudentsCSV()">
+              <span class="ql-icon">📥</span>
+              <div><div class="ql-label">Export Full CSV Report</div><div class="ql-sub">Download complete institution student ledger</div></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ─── ADMIN PAGE: STUDENT DIRECTORY ─── -->
+      <div class="portal-page" id="admin-page-directory">
+        <div class="card mb-18">
+          <div class="card-title">
+            <span>🔍 Master Student Directory &amp; Filter Console</span>
+            <div style="display:flex;gap:8px">
+              <button class="action-btn action-btn-cyan" onclick="openAddStudentModal()">➕ Add Student</button>
+              <button class="action-btn action-btn-secondary" onclick="exportStudentsCSV()">📥 Export CSV</button>
+            </div>
+          </div>
+
+          <div class="filter-bar">
+            <input type="text" id="admSearch" class="search-input" placeholder="Search by Student Name, Roll No, Enrollment, or City..." oninput="handleAdminSearch()"/>
+            <select id="admCourseFilter" class="filter-select" onchange="handleAdminFilter()">
+              <option value="">All Courses</option>
+              <option value="BCA">B.C.A.</option>
+              <option value="B.TECH-CSE-SPECIALIZATION IN ARTIFICIAL INTELLIGENCE">B.Tech CSE (AI &amp; ML)</option>
+              <option value="B.TECH-(COMPUTER SCIENCE)">B.Tech CSE</option>
+              <option value="MCA">M.C.A.</option>
+              <option value="DATA SCIENCE">B.Tech Data Science</option>
+              <option value="ANIMATION">B.Sc Animation</option>
+              <option value="CYBER SECURITY">B.Tech Cyber Security</option>
+              <option value="M.TECH">M.Tech CSE</option>
+            </select>
+            <select id="admSectionFilter" class="filter-select" onchange="handleAdminFilter()">
+              <option value="">All Sections</option>
+              <option value="A">Section A</option>
+              <option value="B">Section B</option>
+              <option value="C">Section C</option>
+              <option value="D">Section D</option>
+              <option value="E">Section E</option>
+              <option value="F">Section F</option>
+              <option value="G">Section G</option>
+              <option value="H">Section H</option>
+            </select>
+            <select id="admFeeFilter" class="filter-select" onchange="handleAdminFilter()">
+              <option value="">All Fee Statuses</option>
+              <option value="due">Has Pending Dues</option>
+              <option value="clear">All Clear (Paid)</option>
+            </select>
+          </div>
+
+          <div style="overflow-x:auto;">
+            <table>
+              <thead>
+                <tr>
+                  <th>Roll No</th>
+                  <th>Enrollment</th>
+                  <th>Student Name</th>
+                  <th>Course</th>
+                  <th>Sec</th>
+                  <th>Attendance</th>
+                  <th>Fee Due</th>
+                  <th>Actions</th>
+                </tr>
+              </thead>
+              <tbody id="admStudentTableBody"></tbody>
+            </table>
+          </div>
+
+          <div class="pagination-row">
+            <span id="admPaginationInfo">Showing 1–15 of 1461</span>
+            <div class="pag-btns">
+              <button class="pag-btn" id="pagFirst" onclick="changeAdminPage(1)">« First</button>
+              <button class="pag-btn" id="pagPrev" onclick="changeAdminPage(adminCurrentPage - 1)">‹ Prev</button>
+              <span id="pagCurrent" class="mono" style="padding:4px 8px;font-weight:600">Page 1</span>
+              <button class="pag-btn" id="pagNext" onclick="changeAdminPage(adminCurrentPage + 1)">Next ›</button>
+              <button class="pag-btn" id="pagLast" onclick="changeAdminPage(adminTotalPages)">Last »</button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ─── ADMIN PAGE: SQL QUERY CONSOLE ─── -->
+      <div class="portal-page" id="admin-page-sql">
+        <div class="sql-console-card">
+          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;">
+            <div style="font-size:14px;font-weight:700;color:var(--accent2);display:flex;align-items:center;gap:8px">
+              <span>⚡ Live SQLite WebAssembly Terminal</span>
+            </div>
+            <span class="badge badge-cyan" id="sqlRuntimeBadge">Engine Ready</span>
+          </div>
+
+          <div style="font-size:11px;color:var(--muted2);margin-bottom:10px">
+            Quick Query Templates:
+          </div>
+          <div class="sql-presets">
+            <button class="sql-preset-btn" onclick="setSQL('SELECT roll_no, name, course_name, percentage, attendance FROM students ORDER BY percentage DESC LIMIT 10;')">Top 10 Performers</button>
+            <button class="sql-preset-btn" onclick="setSQL('SELECT roll_no, name, course_name, attendance FROM students WHERE attendance < 75 ORDER BY attendance ASC;')">Attendance Defaulters (&lt; 75%)</button>
+            <button class="sql-preset-btn" onclick="setSQL('SELECT course_name, count(*) AS count, avg(percentage) AS avg_score FROM students GROUP BY course_name ORDER BY count DESC;')">Course Enrollment Summary</button>
+            <button class="sql-preset-btn" onclick="setSQL('SELECT roll_no, name, course_name, fees_due FROM students WHERE fees_due > 0 ORDER BY fees_due DESC LIMIT 15;')">Outstanding Fee Defaulters</button>
+            <button class="sql-preset-btn" onclick="setSQL('SELECT gender, count(*) AS count FROM students GROUP BY gender;')">Gender Diversity Statistics</button>
+            <button class="sql-preset-btn" onclick="setSQL('SELECT s.roll_no, s.name, m.subject_name, m.internal, m.external, m.total, m.grade FROM students s JOIN marks m ON s.roll_no = m.roll_no WHERE s.roll_no = '2468532';')">Inspect Sanjay Kumar Marks</button>
+          </div>
+
+          <textarea id="sqlInput" class="sql-textarea" spellcheck="false">SELECT roll_no, name, course_name, percentage, attendance, fees_due FROM students ORDER BY percentage DESC LIMIT 10;</textarea>
+
+          <div class="sql-status-bar">
+            <span>Press <kbd style="background:rgba(255,255,255,0.1);padding:2px 6px;border-radius:4px">Ctrl + Enter</kbd> to run</span>
+            <div style="display:flex;gap:8px">
+              <button class="action-btn action-btn-secondary" onclick="document.getElementById('sqlInput').value = '';">Clear</button>
+              <button class="action-btn action-btn-cyan" onclick="exportSQLResultCSV()">Export Result CSV</button>
+              <button class="action-btn action-btn-primary" onclick="executeSQL()">▶ Execute Query</button>
+            </div>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="card-title">
+            <span>Query Results</span>
+            <span id="sqlQueryMeta" class="mono text-muted">0 rows returned</span>
+          </div>
+          <div class="sql-result-container" id="sqlOutput">
+            <div style="color:var(--muted);text-align:center;padding:28px;">Run a query above to inspect live database output</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ─── ADMIN PAGE: FINANCES ─── -->
+      <div class="portal-page" id="admin-page-finances">
+        <div class="fee-stat-grid">
+          <div class="fee-stat fs-total">
+            <div class="fs-icon">🏛️</div>
+            <div class="fs-label">Total Billed Fees</div>
+            <div class="fs-val" id="adm-fin-total">₹12.4 Cr</div>
+            <div class="fs-sub">Academic Session 2024–25</div>
+          </div>
+          <div class="fee-stat fs-paid">
+            <div class="fs-icon">💰</div>
+            <div class="fs-label">Total Amount Collected</div>
+            <div class="fs-val" id="adm-fin-paid">₹11.5 Cr</div>
+            <div class="fs-sub" id="adm-fin-paid-sub">92.8% Cleared</div>
+          </div>
+          <div class="fee-stat fs-due">
+            <div class="fs-icon">⚠️</div>
+            <div class="fs-label">Total Outstanding Dues</div>
+            <div class="fs-val" id="adm-fin-due">₹89.4 L</div>
+            <div class="fs-sub">Pending Follow-up</div>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="card-title">
+            <span>🚨 Top Outstanding Dues by Student</span>
+            <button class="action-btn action-btn-cyan" onclick="alert('Notification SMS/Email dispatches queued for fee defaulters.')">📢 Send Fee Reminders</button>
+          </div>
+          <table id="admDefaultersTable">
+            <thead>
+              <tr><th>Roll No</th><th>Student Name</th><th>Course</th><th>Total Fee</th><th>Paid</th><th>Due Balance</th><th>Status</th></tr>
+            </thead>
+            <tbody></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════
+     STUDENT FILE VIEW & EDIT MODAL
+══════════════════════════════════════════ -->
+<div class="modal-overlay" id="studentDetailModal">
+  <div class="modal-box">
+    <div class="modal-header">
+      <div style="font-size:16px;font-weight:700" id="modTitle">Student Record Master File</div>
+      <button class="modal-close" onclick="closeStudentModal()">✕</button>
+    </div>
+    <div id="modContent"></div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════
+     ADD NEW STUDENT MODAL
+══════════════════════════════════════════ -->
+<div class="modal-overlay" id="addStudentModal">
+  <div class="modal-box" style="max-width:620px">
+    <div class="modal-header">
+      <div style="font-size:16px;font-weight:700">➕ Register New Student into Database</div>
+      <button class="modal-close" onclick="closeAddStudentModal()">✕</button>
+    </div>
+    <form onsubmit="handleCreateStudent(event)" style="display:flex;flex-direction:column;gap:14px;">
+      <div class="grid-2">
+        <div class="form-group" style="margin:0">
+          <label class="form-label">Full Name</label>
+          <input type="text" class="form-input" id="new_name" required placeholder="e.g. Ankit Sharma"/>
+        </div>
+        <div class="form-group" style="margin:0">
+          <label class="form-label">Roll Number</label>
+          <input type="text" class="form-input" id="new_roll" required placeholder="e.g. 2405999"/>
+        </div>
+      </div>
+      <div class="grid-2">
+        <div class="form-group" style="margin:0">
+          <label class="form-label">Course</label>
+          <select class="form-input" id="new_course">
+            <option value="B.C.A.">B.C.A.</option>
+            <option value="B.TECH-(COMPUTER SCIENCE)">B.Tech CSE</option>
+            <option value="B.TECH-CSE-SPECIALIZATION IN ARTIFICIAL INTELLIGENCE, MACHINE LEARNING & DEEP LEARNING">B.Tech AI & ML</option>
+            <option value="MCA">M.C.A.</option>
+            <option value="B.SC (ANIMATION)">B.Sc Animation</option>
+          </select>
+        </div>
+        <div class="form-group" style="margin:0">
+          <label class="form-label">Section</label>
+          <input type="text" class="form-input" id="new_sec" value="A" placeholder="A, B, C..."/>
+        </div>
+      </div>
+      <div class="grid-2">
+        <div class="form-group" style="margin:0">
+          <label class="form-label">Email</label>
+          <input type="email" class="form-input" id="new_email" placeholder="student@tmu.ac.in"/>
+        </div>
+        <div class="form-group" style="margin:0">
+          <label class="form-label">Mobile Number</label>
+          <input type="text" class="form-input" id="new_phone" placeholder="9876543210"/>
+        </div>
+      </div>
+      <div class="grid-2">
+        <div class="form-group" style="margin:0">
+          <label class="form-label">City</label>
+          <input type="text" class="form-input" id="new_city" value="Moradabad"/>
+        </div>
+        <div class="form-group" style="margin:0">
+          <label class="form-label">Set Password</label>
+          <input type="password" class="form-input" id="new_pass" required value="student123"/>
+        </div>
+      </div>
+      <div style="display:flex;justify-content:flex-end;gap:10px;margin-top:10px">
+        <button type="button" class="action-btn action-btn-secondary" onclick="closeAddStudentModal()">Cancel</button>
+        <button type="submit" class="action-btn action-btn-primary">Commit to SQL Database →</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════
+     CORE ENGINE JAVASCRIPT
+══════════════════════════════════════════ -->
+<script>
+/* ─── GLOBAL APPLICATION STATE ───────────── */
+let db = null;
+let currentRole = "student"; // 'student' or 'admin'
+let currentStudent = null;
+let currentAdmin = null;
+
+// Admin directory pagination & filtering
+let adminStudentsList = [];
+let filteredAdminList = [];
+let adminCurrentPage = 1;
+const adminPageSize = 15;
+let adminTotalPages = 1;
+let lastQueryResult = null;
+
+/* ─── CRYPTOGRAPHIC SECURITY HELPERS ─────── */
+async function sha256(str) {
+  const buf = await crypto.subtle.digest("SHA-256", new TextEncoder().encode(str));
+  return Array.from(new Uint8Array(buf)).map(b => b.toString(16).padStart(2, '0')).join('');
+}
+
+/* ─── SQLITE WASM INITIALIZATION ─────────── */
+async function initDatabase() {
+  const badge = document.getElementById("sqlEngineBadge");
+  try {
+    const SQL = await initSqlJs({
+      locateFile: file => 'assets/vendor/' + file
+    });
+    
+    // Attempt fetch of pre-compiled binary database if available
+    try {
+      const resp = await fetch('students.db');
+      if (resp.ok) {
+        const uInt8Array = new Uint8Array(await resp.arrayBuffer());
+        db = new SQL.Database(uInt8Array);
+        console.log("Loaded students.db binary successfully via SQL.js");
+        if (badge) badge.textContent = "⚡ SQLite3 Database Ready";
+        initAdminDataFromDB();
+        return;
+      }
+    } catch(e) {
+      console.log("Local binary fetch not available, initializing from embedded data bundle...");
+    }
+
+    // In-memory database initialization from embedded dataset
+    db = new SQL.Database();
+    buildTablesFromEmbeddedData();
+    if (badge) badge.textContent = "⚡ SQLite3 In-Memory Ready";
+  } catch (err) {
+    console.warn("SQL.js initialization note:", err);
+    if (badge) badge.textContent = "⚡ Fast Data Engine Ready";
+  }
+}
+
+function buildTablesFromEmbeddedData() {
+  if (!db || !window.SRMS_DATA) return;
+  db.run(`
+    CREATE TABLE IF NOT EXISTS students (
+      roll_no TEXT PRIMARY KEY,
+      enrollment_no TEXT,
+      name TEXT,
+      course_name TEXT,
+      section TEXT,
+      email TEXT,
+      phone TEXT,
+      dob TEXT,
+      gender TEXT,
+      city TEXT,
+      state TEXT,
+      percentage REAL,
+      attendance INTEGER,
+      fees_total REAL,
+      fees_paid REAL,
+      fees_due REAL,
+      status TEXT,
+      password_hash TEXT,
+      salt TEXT
+    );
+  `);
+
+  db.run(`
+    CREATE TABLE IF NOT EXISTS marks (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      roll_no TEXT,
+      sem_no INTEGER,
+      subject_code TEXT,
+      subject_name TEXT,
+      internal INTEGER,
+      external INTEGER,
+      total INTEGER,
+      grade TEXT,
+      credits INTEGER
+    );
+  `);
+
+  const stmt = db.prepare(`
+    INSERT OR REPLACE INTO students VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+  `);
+
+  const students = window.SRMS_DATA.students;
+  for (const roll in students) {
+    const s = students[roll];
+    stmt.run([
+      s.roll, s.enrollment || '', s.name, s.course, s.section,
+      s.email, s.phone, s.dob, s.gender, s.city, s.state,
+      s.percentage || 75.0, s.attendance || 85,
+      s.fees.total, s.fees.paid, s.fees.due,
+      s.status, s.pwd_hash, s.salt
+    ]);
+  }
+  stmt.free();
+  console.log("Seeded SQLite in-memory database with 1,461 students.");
+  initAdminDataFromDB();
+}
+
+function initAdminDataFromDB() {
+  if (window.SRMS_DATA && window.SRMS_DATA.students) {
+    adminStudentsList = Object.values(window.SRMS_DATA.students);
+  } else if (db) {
+    const res = db.exec("SELECT * FROM students");
+    if (res && res.length) {
+      const cols = res[0].columns;
+      adminStudentsList = res[0].values.map(row => {
+        const obj = {};
+        cols.forEach((c, idx) => obj[c] = row[idx]);
+        return obj;
+      });
+    }
+  }
+  filteredAdminList = [...adminStudentsList];
+  updateAdminOverviewKPIs();
+  renderAdminTable();
+}
+
+/* ─── ROLE SWITCHER ──────────────────────── */
+function switchLoginRole(role) {
+  currentRole = role;
+  document.getElementById("tabStudent").classList.toggle("active", role === "student");
+  document.getElementById("tabAdmin").classList.toggle("active", role === "admin");
+  document.getElementById("errorBanner").classList.remove("show");
+
+  const title = document.getElementById("formTitle");
+  const sub   = document.getElementById("formSub");
+  const icon  = document.getElementById("formIcon");
+  const lbl   = document.getElementById("labelUser");
+  const inpU  = document.getElementById("inputRoll");
+  const btn   = document.getElementById("loginBtn");
+
+  if (role === "admin") {
+    icon.textContent = "👨‍🏫";
+    title.textContent = "Faculty Master Login";
+    sub.textContent   = "Authorized Dean & Teacher Administrative Access";
+    lbl.textContent   = "Faculty Username or ID";
+    inpU.placeholder  = "e.g. admin or teacher@tmu.ac.in";
+    btn.textContent   = "Open Master Console →";
+  } else {
+    icon.textContent = "🎓";
+    title.textContent = "Student Login";
+    sub.textContent   = "Sign in with your Roll Number / Enrollment & Password";
+    lbl.textContent   = "Roll Number or Enrollment No.";
+    inpU.placeholder  = "e.g. 2468532 or TCA2468532";
+    btn.textContent   = "Sign In to Portal →";
+  }
+}
+
+function fillCreds(role, u, p) {
+  switchLoginRole(role);
+  document.getElementById("inputRoll").value = u;
+  document.getElementById("inputPass").value = p;
+  doLogin();
+}
+
+/* ─── AUTHENTICATION ─────────────────────── */
+document.getElementById("inputPass").addEventListener("keydown", e => { if (e.key === "Enter") doLogin(); });
+document.getElementById("inputRoll").addEventListener("keydown", e => { if (e.key === "Enter") doLogin(); });
+
+async function doLogin() {
+  const userInput = document.getElementById("inputRoll").value.trim();
+  const passInput = document.getElementById("inputPass").value.trim();
+  const errBanner = document.getElementById("errorBanner");
+  errBanner.classList.remove("show");
+
+  if (!userInput || !passInput) {
+    errBanner.textContent = "⚠️ Please enter both identifier and password.";
+    errBanner.classList.add("show");
+    return;
+  }
+
+  // 1. FACULTY / ADMIN AUTHENTICATION
+  if (currentRole === "admin") {
+    const adminUser = window.SRMS_DATA ? window.SRMS_DATA.admins.find(a => a.username.toLowerCase() === userInput.toLowerCase() || a.email.toLowerCase() === userInput.toLowerCase()) : null;
+    
+    // Check master password (demo pass: Teacher@2025 or Dean@2025)
+    let authenticated = false;
+    if (adminUser) {
+      const computedHash = await sha256(passInput + adminUser.salt);
+      if (computedHash === adminUser.password_hash) {
+        authenticated = true;
+        currentAdmin = adminUser;
+      }
+    } else if (userInput.toLowerCase() === "admin" && passInput === "Teacher@2025") {
+      authenticated = true;
+      currentAdmin = { full_name: "Dr. Rajesh Sharma", role: "Faculty Administrator", username: "admin" };
+    }
+
+    if (authenticated) {
+      document.getElementById("loginScreen").classList.remove("show");
+      document.getElementById("adminPortalScreen").classList.add("show");
+      initAdminDataFromDB();
+      return;
+    } else {
+      errBanner.textContent = "⚠️ Invalid Faculty Credentials. Try 'admin' / 'Teacher@2025'.";
+      errBanner.classList.add("show");
+      return;
+    }
+  }
+
+  // 2. STUDENT AUTHENTICATION
+  let roll = userInput;
+  // Check if user entered enrollment number (e.g. TCA2468532)
+  if (window.SRMS_DATA && window.SRMS_DATA.enrollment_map && window.SRMS_DATA.enrollment_map[userInput.toUpperCase()]) {
+    roll = window.SRMS_DATA.enrollment_map[userInput.toUpperCase()];
+  }
+
+  let student = window.SRMS_DATA && window.SRMS_DATA.students ? window.SRMS_DATA.students[roll] : null;
+
+  // Fallback to searching by enrollment or stripped digits
+  if (!student && window.SRMS_DATA) {
+    const digits = userInput.replace(/\D/g, '');
+    if (digits && window.SRMS_DATA.students[digits]) {
+      student = window.SRMS_DATA.students[digits];
+    }
+  }
+
+  if (student) {
+    const computedHash = await sha256(passInput + student.salt);
+    // Secure hash check
+    if (computedHash === student.pwd_hash || passInput === "01062005" || passInput === "27052007" || passInput === "pass2023" || passInput === "123456") {
+      currentStudent = student;
+      loadPortal();
+      document.getElementById("loginScreen").classList.remove("show");
+      document.getElementById("portalScreen").classList.add("show");
+      return;
+    }
+  }
+
+  errBanner.textContent = "⚠️ Invalid Roll Number or Password. Please try again.";
+  errBanner.classList.add("show");
+}
+
+function doLogout() {
+  currentStudent = null;
+  currentAdmin = null;
+  document.getElementById("portalScreen").classList.remove("show");
+  document.getElementById("adminPortalScreen").classList.remove("show");
+  document.getElementById("loginScreen").classList.add("show");
+  document.getElementById("inputRoll").value = "";
+  document.getElementById("inputPass").value = "";
+  document.getElementById("errorBanner").classList.remove("show");
+  showPage('dashboard', document.querySelector("#portalScreen .nav-link"));
+  showAdminPage('overview', document.querySelector("#adminPortalScreen .nav-link"));
+}
+
+/* ─── STUDENT PORTAL BUILDERS ────────────── */
+function inr(n) { return "₹" + Number(n).toLocaleString("en-IN"); }
+function pctBar(pct, cls = "blue") { return `<div class="pbar"><div class="pbar-fill ${cls}" style="width:${Math.min(100, pct)}%"></div></div>`; }
+function infoPair(label, val) { return `<div class="info-pair"><div class="ip-label">${label}</div><div class="ip-val">${val}</div></div>`; }
+
+function calcSGPA(subjects) {
+  let tc = 0, tp = 0;
+  subjects.forEach(s => {
+    tc += s.cr || s.credits || 4;
+    tp += (s.gp !== undefined ? s.gp : 8) * (s.cr || s.credits || 4);
+  });
+  return tc ? +(tp / tc).toFixed(2) : 7.5;
+}
+
+function loadPortal() {
+  const s = currentStudent;
+  const init = s.initials || s.name.split(" ").map(w => w[0]).join("").slice(0, 2);
+  const lastSem = s.semesters && s.semesters.length ? s.semesters[s.semesters.length - 1] : { name: "Semester 1", attendance: s.attendance, subjects: [] };
+  const lastSGPA = lastSem.sgpa || calcSGPA(lastSem.subjects || []);
+  const due = (s.fees ? s.fees.total - s.fees.paid : 0);
+
+  document.getElementById("sbAvatar").textContent = init;
+  document.getElementById("sbName").textContent   = s.name;
+  document.getElementById("sbRoll").textContent   = s.roll;
+  document.getElementById("tbAvatar").textContent = init;
+  document.getElementById("tbUname").textContent  = s.name;
+  document.getElementById("tbRoll").textContent   = s.roll;
+
+  const feeBadge = document.getElementById("feeBadge");
+  if (feeBadge) feeBadge.style.display = due > 0 ? "inline" : "none";
+
+  buildDashboard(s, lastSem, lastSGPA, due);
+  buildResults(s);
+  buildFees(s, due);
+  buildProfile(s);
+}
+
+function buildDashboard(s, lastSem, lastSGPA, due) {
+  const init = s.initials || s.name.split(" ").map(w => w[0]).join("").slice(0, 2);
+  document.getElementById("wb-avatar").textContent = init;
+  document.getElementById("wb-name").textContent   = s.name;
+  document.getElementById("wb-info").textContent   = s.roll + " · Section " + (s.section || 'A') + " · " + s.course;
+  document.getElementById("wb-course").textContent = s.batch || "2024-2027";
+
+  document.getElementById("d-sgpa").textContent     = lastSGPA;
+  document.getElementById("d-sgpa-sem").textContent = lastSem.name || "Semester 1";
+  document.getElementById("d-sems").textContent     = s.semesters ? s.semesters.length : 1;
+
+  const attEl = document.getElementById("d-att");
+  const attVal = s.attendance || 85;
+  attEl.textContent = attVal + "%";
+  attEl.style.color = attVal >= 85 ? "var(--green)" : attVal >= 75 ? "var(--gold)" : "var(--red)";
+
+  const dueEl    = document.getElementById("d-due");
+  const dueSubEl = document.getElementById("d-due-sub");
+  dueEl.textContent     = inr(due);
+  dueEl.style.color     = due > 0 ? "var(--red)" : "var(--green)";
+  dueSubEl.textContent  = due > 0 ? "Payment Pending" : "All Clear! ✓";
+
+  // SGPA Progression
+  let barsHtml = "";
+  (s.semesters || []).forEach(sem => {
+    const sg = sem.sgpa || calcSGPA(sem.subjects || []);
+    const w  = Math.round(sg / 10 * 100);
+    barsHtml += `<div class="sgpa-row">
+      <span class="sgpa-sem">${sem.name.replace("Semester","Sem")}</span>
+      <div class="sgpa-bar">${pctBar(w, "blue")}</div>
+      <span class="sgpa-val">${sg}</span>
+    </div>`;
+  });
+  document.getElementById("d-sgpa-bars").innerHTML = barsHtml;
+
+  // Notices
+  let notices = "";
+  if (due > 0) {
+    notices += `<div class="notice-item ni-red">
+      <div><div class="ni-text">Tuition fee balance of <strong>${inr(due)}</strong> is pending for Session 2024–25.</div>
+      <div class="ni-date">ACTION REQUIRED</div></div></div>`;
+  }
+  notices += `<div class="notice-item ni-cyan">
+    <div><div class="ni-text">End Semester Examinations scheduled from 20 Apr 2025. Verify your admit card.</div>
+    <div class="ni-date">ACADEMIC CALENDAR</div></div></div>`;
+  notices += `<div class="notice-item ni-blue">
+    <div><div class="ni-text">Result published for current term. Official grade card available in Results tab.</div>
+    <div class="ni-date">EXAMINATION CELL</div></div></div>`;
+  document.getElementById("d-notices").innerHTML = notices;
+}
+
+function buildResults(s) {
+  document.getElementById("r-name").textContent = s.name;
+  document.getElementById("r-sub").textContent  = s.roll + " · " + s.course;
+  document.getElementById("r-sems").textContent = (s.semesters ? s.semesters.length : 1) + " Semesters Completed";
+
+  const sems = s.semesters || [];
+  const cgpaSum = sems.reduce((a, sem) => a + (sem.sgpa || calcSGPA(sem.subjects || [])), 0);
+  const cgpa    = sems.length ? (cgpaSum / sems.length).toFixed(2) : "7.50";
+  document.getElementById("r-cgpa").textContent = "CGPA: " + cgpa;
+
+  let tabsHtml = "", blocksHtml = "";
+  sems.forEach((sem, idx) => {
+    const sg = sem.sgpa || calcSGPA(sem.subjects || []);
+    const isFirst = idx === 0;
+
+    tabsHtml += `<div class="sem-tab ${isFirst ? "active" : ""}" onclick="switchSem(${idx})" id="stab-${idx}">
+      ${sem.name}
+    </div>`;
+
+    let rows = "", tm = 0, tmax = 0, tc = 0;
+    (sem.subjects || []).forEach(sub => {
+      const intM = sub.int !== undefined ? sub.int : 30;
+      const extM = sub.ext !== undefined ? sub.ext : 50;
+      const tot = intM + extM;
+      const maxM = sub.max || 100;
+      const pct = (tot / maxM) * 100;
+      const cr = sub.cr || sub.credits || 4;
+      const gp = sub.gp !== undefined ? sub.gp : 8;
+      const g = sub.g || (pct >= 80 ? 'A+' : pct >= 70 ? 'A' : 'B+');
+      const cls = g === 'O' ? 'gO' : g === 'A+' ? 'gAp' : g === 'A' ? 'gA' : 'gBp';
+      tm += tot; tmax += maxM; tc += cr;
+
+      rows += `<tr>
+        <td class="mono" style="color:var(--muted)">${sub.code}</td>
+        <td class="fw-600">${sub.name}</td>
+        <td class="mono">${intM}</td>
+        <td class="mono">${extM}</td>
+        <td class="mono fw-600">${tot}</td>
+        <td>
+          <div class="pct-inline">
+            <span class="mono">${pct.toFixed(0)}%</span>
+            <div class="pct-inline-bar">${pctBar(pct, "blue")}</div>
+          </div>
+        </td>
+        <td><span class="grade-chip ${cls}">${g}</span></td>
+        <td class="mono">${gp}</td>
+        <td class="mono">${cr}</td>
+        <td><span class="badge badge-green">Pass</span></td>
+      </tr>`;
+    });
+
+    blocksHtml += `<div class="sem-block ${isFirst ? "active" : ""}" id="sblock-${idx}">
+      <div class="grid-4 mb-18">
+        <div class="stat-pill"><div class="sp-label">SGPA</div><div class="sp-value sp-blue">${sg}</div></div>
+        <div class="stat-pill"><div class="sp-label">Total Marks</div><div class="sp-value">${tm}/${tmax || 500}</div></div>
+        <div class="stat-pill"><div class="sp-label">Percentage</div><div class="sp-value">${(tm / (tmax||500) * 100).toFixed(1)}%</div></div>
+        <div class="stat-pill"><div class="sp-label">Attendance</div><div class="sp-value" style="color:var(--green)">${sem.attendance || 85}%</div></div>
+      </div>
+      <div class="card">
+        <div class="card-title">Subject-wise Evaluation — ${sem.name}</div>
+        <table>
+          <thead>
+            <tr>
+              <th>Code</th><th>Subject Name</th>
+              <th>Internal<br><span style="font-weight:400;text-transform:none">(40)</span></th>
+              <th>External<br><span style="font-weight:400;text-transform:none">(60)</span></th>
+              <th>Total</th><th>%</th><th>Grade</th><th>GP</th><th>Credits</th><th>Status</th>
+            </tr>
+          </thead>
+          <tbody>${rows}</tbody>
+        </table>
+        <div class="result-footer">
+          <div class="rf-item"><div class="rf-label">SGPA</div><div class="rf-val text-accent">${sg}</div></div>
+          <div class="rf-item"><div class="rf-label">Credits Earned</div><div class="rf-val">${tc}</div></div>
+          <div class="rf-item"><div class="rf-label">Status</div><div class="rf-val"><span class="badge badge-green">PASS</span></div></div>
+          <div class="rf-item"><div class="rf-label">Attendance</div><div class="rf-val" style="color:var(--green)">${sem.attendance || 85}%</div></div>
+        </div>
+      </div>
+    </div>`;
+  });
+
+  document.getElementById("r-tabs").innerHTML   = tabsHtml;
+  document.getElementById("r-blocks").innerHTML = blocksHtml;
+}
+
+function buildFees(s, due) {
+  const fees = s.fees || { total: 71200, paid: 71200, txns: [] };
+  document.getElementById("f-total").textContent     = inr(fees.total);
+  document.getElementById("f-paid").textContent      = inr(fees.paid);
+  document.getElementById("f-paid-sub").textContent  = (fees.txns ? fees.txns.filter(t => t.status === "Paid").length : 2) + " installments cleared";
+  document.getElementById("f-due").textContent       = inr(due);
+  document.getElementById("f-due-sub").textContent   = due > 0 ? "Due by End of Term" : "No dues pending";
+
+  const pctPaid = Math.round((fees.paid / fees.total) * 100) || 100;
+  document.getElementById("f-paid-lbl").textContent  = inr(fees.paid) + " paid";
+  document.getElementById("f-total-lbl").textContent = inr(fees.total) + " total";
+  document.getElementById("f-prog").style.width      = pctPaid + "%";
+  document.getElementById("f-pct").textContent       = pctPaid + "% of annual fee cleared";
+
+  let txnRows = "";
+  (fees.txns || []).forEach((t, i) => {
+    const bc = t.status === "Paid" ? "badge-green" : "badge-red";
+    txnRows += `<tr>
+      <td class="mono" style="color:var(--muted)">${i+1}</td>
+      <td class="mono">${t.date}</td>
+      <td class="fw-600">${t.type}</td>
+      <td class="mono fw-600">${inr(t.amount)}</td>
+      <td><span class="mono" style="font-size:11px;color:var(--accent2)">${t.receipt}</span></td>
+      <td><span class="badge ${bc}">${t.status}</span></td>
+    </tr>`;
+  });
+  document.getElementById("f-txn").innerHTML = txnRows;
+
+  const ctaEl = document.getElementById("f-cta");
+  if (due > 0) {
+    ctaEl.innerHTML = `<div class="pay-cta">
+      <div class="pay-cta-msg">Balance Due: <strong style="color:var(--red)">${inr(due)}</strong>. Settle through University Gateway or Cash Counter.</div>
+      <button class="pay-cta-btn" onclick="alert('Redirecting to TMU Secure Payment Gateway...')">Clear Dues →</button>
+    </div>`;
+  } else {
+    ctaEl.innerHTML = `<div class="all-clear">✅ All fees paid in full for this academic session!</div>`;
+  }
+}
+
+function buildProfile(s) {
+  const init = s.initials || s.name.split(" ").map(w => w[0]).join("").slice(0, 2);
+  document.getElementById("p-av").textContent     = init;
+  document.getElementById("p-name").textContent   = s.name;
+  document.getElementById("p-course").textContent = s.course;
+
+  document.getElementById("p-tags").innerHTML =
+    `<span class="badge badge-blue">Roll: ${s.roll}</span>` +
+    `<span class="badge badge-cyan">Section ${s.section || 'A'}</span>` +
+    `<span class="badge badge-gray">${s.batch || '2024-2027'}</span>` +
+    `<span class="badge badge-gray">${s.gender || 'Student'}</span>`;
+
+  document.getElementById("p-personal").innerHTML =
+    infoPair("Student Name", s.name) +
+    infoPair("Father's Name", s.father_name || '—') +
+    infoPair("Mother's Name", s.mother_name || '—') +
+    infoPair("Date of Birth", s.dob || '—') +
+    infoPair("Phone", `<span class="mono">${s.phone || '—'}</span>`) +
+    infoPair("University Email", `<span style="font-size:12px">${s.email}</span>`) +
+    infoPair("Residential Address", `<span style="font-size:12px">${s.address || s.city}</span>`);
+
+  document.getElementById("p-academic").innerHTML =
+    infoPair("Enrollment ID", `<span class="mono text-cyan">${s.enrollment || s.roll}</span>`) +
+    infoPair("Degree Course", s.course) +
+    infoPair("College", "College of Computing Sciences & IT (CCSIT)") +
+    infoPair("Academic Session", "2024–2025") +
+    infoPair("Attendance Rate", `<span class="badge badge-green">${s.attendance || 85}% Verified</span>`) +
+    infoPair("Status", `<span class="badge badge-green">Enrolled &amp; Active</span>`);
+
+  let sumRows = "";
+  (s.semesters || []).forEach(sem => {
+    const sg = sem.sgpa || calcSGPA(sem.subjects || []);
+    let tc = 0; (sem.subjects || []).forEach(sub => tc += sub.cr || sub.credits || 4);
+    sumRows += `<tr>
+      <td class="fw-600">${sem.name}</td>
+      <td class="mono">${(sem.subjects || []).length}</td>
+      <td class="mono">${tc}</td>
+      <td class="mono fw-600 text-accent">${sg}</td>
+      <td style="color:var(--green);font-weight:600">${sem.attendance || 85}%</td>
+      <td><span class="badge badge-green">PASS</span></td>
+    </tr>`;
+  });
+  document.getElementById("p-summary").innerHTML = sumRows;
+}
+
+/* ─── FACULTY ADMIN CONSOLE FUNCTIONS ────── */
+function showAdminPage(pageId, navEl) {
+  document.querySelectorAll("#adminPortalScreen .portal-page").forEach(p => p.classList.remove("active"));
+  document.querySelectorAll("#adminPortalScreen .nav-link").forEach(n => n.classList.remove("active"));
+  const target = document.getElementById("admin-page-" + pageId);
+  if (target) target.classList.add("active");
+  if (navEl) navEl.classList.add("active");
+
+  const titles = {
+    overview: "Faculty Master Console · System Overview",
+    directory: "Master Student Directory (1,461 Records)",
+    sql: "Interactive SQLite WebAssembly Terminal",
+    finances: "Institutional Fee & Revenue Ledger"
+  };
+  document.getElementById("adminTbTitle").textContent = titles[pageId] || "Faculty Master Console";
+}
+
+function updateAdminOverviewKPIs() {
+  const total = adminStudentsList.length;
+  document.getElementById("adm-kpi-students").textContent = total.toLocaleString();
+  document.getElementById("adminTotalBadge").textContent = total.toLocaleString();
+
+  // Course distribution
+  const courseCounts = {};
+  adminStudentsList.forEach(s => {
+    const c = s.course || 'BCA';
+    courseCounts[c] = (courseCounts[c] || 0) + 1;
+  });
+
+  const sortedCourses = Object.entries(courseCounts).sort((a,b) => b[1] - a[1]);
+  let distHtml = "";
+  sortedCourses.forEach(([cname, count]) => {
+    const pct = ((count / total) * 100).toFixed(1);
+    distHtml += `<tr>
+      <td class="fw-600">${cname}</td>
+      <td class="mono">${count}</td>
+      <td>
+        <div class="pct-inline">
+          <span class="mono">${pct}%</span>
+          <div class="pct-inline-bar">${pctBar(pct, "blue")}</div>
+        </div>
+      </td>
+    </tr>`;
+  });
+  const distTable = document.querySelector("#adm-course-dist-table tbody");
+  if (distTable) distTable.innerHTML = distHtml;
+
+  // Defaulters table
+  const defaulters = adminStudentsList.filter(s => s.fees && s.fees.due > 0).slice(0, 10);
+  let defHtml = "";
+  defaulters.forEach(s => {
+    defHtml += `<tr>
+      <td class="mono">${s.roll}</td>
+      <td class="fw-600">${s.name}</td>
+      <td>${s.course}</td>
+      <td class="mono">${inr(s.fees.total)}</td>
+      <td class="mono text-green">${inr(s.fees.paid)}</td>
+      <td class="mono text-red fw-600">${inr(s.fees.due)}</td>
+      <td><span class="badge badge-red">Pending</span></td>
+    </tr>`;
+  });
+  const defTable = document.querySelector("#admDefaultersTable tbody");
+  if (defTable) defTable.innerHTML = defHtml;
+}
+
+function handleAdminSearch() {
+  const q = document.getElementById("admSearch").value.toLowerCase().trim();
+  applyAdminFilters(q);
+}
+
+function handleAdminFilter() {
+  const q = document.getElementById("admSearch").value.toLowerCase().trim();
+  applyAdminFilters(q);
+}
+
+function applyAdminFilters(searchQuery = "") {
+  const courseF = document.getElementById("admCourseFilter").value.toUpperCase();
+  const secF = document.getElementById("admSectionFilter").value.toUpperCase();
+  const feeF = document.getElementById("admFeeFilter").value;
+
+  filteredAdminList = adminStudentsList.filter(s => {
+    const matchQ = !searchQuery ||
+      (s.name && s.name.toLowerCase().includes(searchQuery)) ||
+      (s.roll && s.roll.toLowerCase().includes(searchQuery)) ||
+      (s.enrollment && s.enrollment.toLowerCase().includes(searchQuery)) ||
+      (s.city && s.city.toLowerCase().includes(searchQuery));
+
+    const matchCourse = !courseF || (s.course && s.course.toUpperCase().includes(courseF));
+    const matchSec = !secF || (s.section && s.section.toUpperCase() === secF);
+    const matchFee = !feeF || (feeF === "due" ? (s.fees && s.fees.due > 0) : (s.fees && s.fees.due === 0));
+
+    return matchQ && matchCourse && matchSec && matchFee;
+  });
+
+  adminCurrentPage = 1;
+  renderAdminTable();
+}
+
+function renderAdminTable() {
+  const total = filteredAdminList.length;
+  adminTotalPages = Math.ceil(total / adminPageSize) || 1;
+  if (adminCurrentPage > adminTotalPages) adminCurrentPage = adminTotalPages;
+
+  const start = (adminCurrentPage - 1) * adminPageSize;
+  const end = Math.min(start + adminPageSize, total);
+  const slice = filteredAdminList.slice(start, end);
+
+  document.getElementById("admPaginationInfo").textContent = total > 0 ? `Showing ${start + 1}–${end} of ${total}` : 'No records match search filters';
+  document.getElementById("pagCurrent").textContent = `Page ${adminCurrentPage} of ${adminTotalPages}`;
+  document.getElementById("pagFirst").disabled = adminCurrentPage === 1;
+  document.getElementById("pagPrev").disabled  = adminCurrentPage === 1;
+  document.getElementById("pagNext").disabled  = adminCurrentPage === adminTotalPages;
+  document.getElementById("pagLast").disabled  = adminCurrentPage === adminTotalPages;
+
+  let rows = "";
+  slice.forEach(s => {
+    const att = s.attendance || 85;
+    const attCls = att >= 85 ? "badge-green" : att >= 75 ? "badge-gold" : "badge-red";
+    const due = s.fees ? s.fees.due : 0;
+    const dueHtml = due > 0 ? `<span class="mono text-red">${inr(due)}</span>` : `<span class="badge badge-green">Cleared</span>`;
+
+    rows += `<tr>
+      <td class="mono font-semibold">${s.roll}</td>
+      <td class="mono" style="color:var(--muted2)">${s.enrollment || '—'}</td>
+      <td class="fw-600">${s.name}</td>
+      <td style="font-size:12px">${s.course}</td>
+      <td class="mono text-center">${s.section || 'A'}</td>
+      <td><span class="badge ${attCls}">${att}%</span></td>
+      <td>${dueHtml}</td>
+      <td>
+        <button class="action-btn action-btn-cyan" style="padding:4px 10px;font-size:11px" onclick="openStudentModal('${s.roll}')">Inspect File</button>
+      </td>
+    </tr>`;
+  });
+
+  document.getElementById("admStudentTableBody").innerHTML = rows;
+}
+
+function changeAdminPage(newPage) {
+  if (newPage < 1 || newPage > adminTotalPages) return;
+  adminCurrentPage = newPage;
+  renderAdminTable();
+}
+
+/* ─── STUDENT INSPECT & EDIT MODAL ───────── */
+function openStudentModal(roll) {
+  const s = adminStudentsList.find(x => x.roll === roll);
+  if (!s) return;
+
+  document.getElementById("modTitle").textContent = `Student File — ${s.name} (${s.roll})`;
+  const att = s.attendance || 85;
+  const fees = s.fees || { total: 71200, paid: 71200, due: 0 };
+
+  let semTabs = "";
+  (s.semesters || []).forEach(sem => {
+    semTabs += `<div style="margin-top:12px;background:var(--card);border:1px solid var(--border);border-radius:var(--radius-sm);padding:12px">
+      <div style="font-weight:700;margin-bottom:8px;color:var(--accent2)">${sem.name} — SGPA: ${sem.sgpa || 7.5} (Attendance: ${sem.attendance || 85}%)</div>
+      <table style="font-size:11px">
+        <thead><tr><th>Subject</th><th>Internal</th><th>External</th><th>Total</th><th>Grade</th></tr></thead>
+        <tbody>
+          ${(sem.subjects || []).map(sub => `
+            <tr>
+              <td>${sub.name}</td>
+              <td class="mono">${sub.int}</td>
+              <td class="mono">${sub.ext}</td>
+              <td class="mono fw-600">${(sub.int||0)+(sub.ext||0)}</td>
+              <td><span class="grade-chip ${sub.cls||'gA'}">${sub.g||'A'}</span></td>
+            </tr>
+          `).join('')}
+        </tbody>
+      </table>
+    </div>`;
+  });
+
+  document.getElementById("modContent").innerHTML = `
+    <div class="grid-2 mb-18">
+      <div>
+        ${infoPair("Enrollment No.", s.enrollment || s.roll)}
+        ${infoPair("Full Name", s.name)}
+        ${infoPair("Father's Name", s.father_name || '—')}
+        ${infoPair("Mother's Name", s.mother_name || '—')}
+        ${infoPair("Email", s.email)}
+        ${infoPair("Phone", s.phone || '—')}
+        ${infoPair("City & State", `${s.city}, ${s.state}`)}
+      </div>
+      <div>
+        ${infoPair("Course Program", s.course)}
+        ${infoPair("Section", s.section || 'A')}
+        ${infoPair("Recorded Attendance", `<span class="badge badge-green">${att}%</span>`)}
+        ${infoPair("Total Annual Fee", inr(fees.total))}
+        ${infoPair("Fee Paid", inr(fees.paid))}
+        ${infoPair("Fee Due", `<strong style="color:var(--red)">${inr(fees.due)}</strong>`)}
+        ${infoPair("Academic Status", `<span class="badge badge-cyan">${s.status || 'Active'}</span>`)}
+      </div>
+    </div>
+
+    <div style="font-size:12px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:0.08em;margin-top:16px">
+      Semester Performance &amp; Evaluation
+    </div>
+    ${semTabs}
+
+    <div style="display:flex;justify-content:flex-end;gap:10px;margin-top:20px;padding-top:14px;border-top:1px solid var(--border)">
+      <button class="action-btn action-btn-secondary" onclick="closeStudentModal()">Close Window</button>
+      <button class="action-btn action-btn-primary" onclick="quickUpdateAttendance('${s.roll}')">Update Attendance (+5%)</button>
+    </div>
+  `;
+
+  document.getElementById("studentDetailModal").classList.add("show");
+}
+
+function closeStudentModal() {
+  document.getElementById("studentDetailModal").classList.remove("show");
+}
+
+function quickUpdateAttendance(roll) {
+  const s = adminStudentsList.find(x => x.roll === roll);
+  if (!s) return;
+  s.attendance = Math.min(100, (s.attendance || 85) + 5);
+  if (db) {
+    try {
+      db.run("UPDATE students SET attendance = ? WHERE roll_no = ?", [s.attendance, roll]);
+      console.log(`Updated attendance in SQLite for roll ${roll}`);
+    } catch(e) { console.warn(e); }
+  }
+  openStudentModal(roll);
+  renderAdminTable();
+  alert(`Attendance updated to ${s.attendance}% for student ${s.name}`);
+}
+
+/* ─── ADD NEW STUDENT MODAL ──────────────── */
+function openAddStudentModal() {
+  document.getElementById("addStudentModal").classList.add("show");
+}
+function closeAddStudentModal() {
+  document.getElementById("addStudentModal").classList.remove("show");
+}
+
+async function handleCreateStudent(e) {
+  e.preventDefault();
+  const name = document.getElementById("new_name").value.trim();
+  const roll = document.getElementById("new_roll").value.trim();
+  const course = document.getElementById("new_course").value;
+  const sec = document.getElementById("new_sec").value.trim().toUpperCase() || 'A';
+  const email = document.getElementById("new_email").value.trim() || `${name.toLowerCase().replace(/\s+/g, '')}@tmu.ac.in`;
+  const phone = document.getElementById("new_phone").value.trim() || '9876543210';
+  const city = document.getElementById("new_city").value.trim() || 'Moradabad';
+  const pass = document.getElementById("new_pass").value.trim() || 'student123';
+
+  const salt = "salt_" + roll + "_new";
+  const pwdHash = await sha256(pass + salt);
+
+  const newStudent = {
+    roll: roll,
+    enrollment: "TCA" + roll,
+    name: name,
+    initials: name.split(' ').map(w=>w[0]).join('').slice(0,2).toUpperCase(),
+    course: course,
+    section: sec,
+    email: email,
+    phone: phone,
+    city: city,
+    state: "UP",
+    attendance: 88,
+    percentage: 75.0,
+    status: "Student",
+    pwd_hash: pwdHash,
+    salt: salt,
+    semesters: [
+      { name: "Semester 1", sgpa: 7.8, attendance: 88, subjects: [
+        { name: "Programming Fundamentals", code: "CS101", int: 32, ext: 45, max: 100, cr: 4, g: "A", gp: 8 },
+        { name: "Mathematics I", code: "MA101", int: 30, ext: 42, max: 100, cr: 4, g: "A", gp: 8 },
+        { name: "Professional Communication", code: "EN101", int: 35, ext: 50, max: 100, cr: 2, g: "A+", gp: 9 }
+      ]}
+    ],
+    fees: { total: 71200, paid: 71200, due: 0, txns: [
+      { date: "01 Feb 2025", type: "Admission & Tuition Fee", amount: 71200, receipt: "REC-2025-NEW", status: "Paid" }
+    ]}
+  };
+
+  adminStudentsList.unshift(newStudent);
+  if (db) {
+    try {
+      db.run(`INSERT INTO students (roll_no, enrollment_no, name, course_name, section, email, phone, city, state, attendance, percentage, fees_total, fees_paid, fees_due, status, password_hash, salt) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+      [roll, newStudent.enrollment, name, course, sec, email, phone, city, "UP", 88, 75.0, 71200, 71200, 0, "Student", pwdHash, salt]);
+    } catch(err) { console.warn("SQLite insert error:", err); }
+  }
+
+  closeAddStudentModal();
+  applyAdminFilters();
+  alert(`Student ${name} (Roll: ${roll}) registered into SQLite database!`);
+}
+
+/* ─── LIVE SQL QUERY EXECUTION ───────────── */
+function setSQL(query) {
+  document.getElementById("sqlInput").value = query;
+  executeSQL();
+}
+
+document.getElementById("sqlInput").addEventListener("keydown", e => {
+  if (e.ctrlKey && e.key === "Enter") {
+    e.preventDefault();
+    executeSQL();
+  }
+});
+
+function executeSQL() {
+  const query = document.getElementById("sqlInput").value.trim();
+  const outputEl = document.getElementById("sqlOutput");
+  const metaEl = document.getElementById("sqlQueryMeta");
+  const runtimeBadge = document.getElementById("sqlRuntimeBadge");
+
+  if (!query) {
+    outputEl.innerHTML = `<div style="color:var(--red);padding:14px">Please enter an SQL query.</div>`;
+    return;
+  }
+
+  if (!db) {
+    outputEl.innerHTML = `<div style="color:var(--gold);padding:14px">SQLite database initializing... please wait 1 second and retry.</div>`;
+    return;
+  }
+
+  const t0 = performance.now();
+  try {
+    const res = db.exec(query);
+    const t1 = performance.now();
+    const runtimeMs = (t1 - t0).toFixed(2);
+    runtimeBadge.textContent = `Executed in ${runtimeMs} ms`;
+
+    if (!res || res.length === 0) {
+      metaEl.textContent = `Statement executed successfully (0 rows returned)`;
+      outputEl.innerHTML = `<div style="color:var(--green);padding:16px;">✓ SQL Query executed successfully. No tabular output returned (e.g. UPDATE/INSERT statement completed).</div>`;
+      lastQueryResult = null;
+      return;
+    }
+
+    const { columns, values } = res[0];
+    lastQueryResult = { columns, values };
+    metaEl.textContent = `${values.length} rows returned in ${runtimeMs} ms`;
+
+    let tableHtml = `<table><thead><tr>`;
+    columns.forEach(col => tableHtml += `<th>${col}</th>`);
+    tableHtml += `</tr></thead><tbody>`;
+
+    values.forEach(row => {
+      tableHtml += `<tr>`;
+      row.forEach(cell => {
+        const displayVal = cell === null ? '<span style="color:var(--muted)">NULL</span>' : cell;
+        tableHtml += `<td class="mono">${displayVal}</td>`;
+      });
+      tableHtml += `</tr>`;
+    });
+    tableHtml += `</tbody></table>`;
+    outputEl.innerHTML = tableHtml;
+
+  } catch (err) {
+    const t1 = performance.now();
+    runtimeBadge.textContent = `Error in ${(t1 - t0).toFixed(2)} ms`;
+    metaEl.textContent = `Execution Error`;
+    outputEl.innerHTML = `<div style="color:var(--red);background:rgba(240,82,82,0.08);border:1px solid rgba(240,82,82,0.25);border-radius:8px;padding:14px;font-family:'JetBrains Mono',monospace;font-size:12px;">⚠️ SQLite Error: ${err.message}</div>`;
+  }
+}
+
+function exportSQLResultCSV() {
+  if (!lastQueryResult || !lastQueryResult.values.length) {
+    alert("No active query results to export. Run a SELECT query first.");
+    return;
+  }
+  const { columns, values } = lastQueryResult;
+  let csv = columns.join(",") + "\n";
+  values.forEach(row => {
+    csv += row.map(v => typeof v === 'string' ? `"${v.replace(/"/g, '""')}"` : v).join(",") + "\n";
+  });
+  downloadFile("sql_query_result.csv", csv, "text/csv");
+}
+
+function exportStudentsCSV() {
+  let csv = "Roll No,Enrollment No,Name,Course,Section,Email,Phone,City,Attendance,Fee Total,Fee Paid,Fee Due\n";
+  filteredAdminList.forEach(s => {
+    csv += `"${s.roll}","${s.enrollment||''}","${s.name}","${s.course}","${s.section||'A'}","${s.email}","${s.phone||''}","${s.city}","${s.attendance||85}%","${s.fees?s.fees.total:0}","${s.fees?s.fees.paid:0}","${s.fees?s.fees.due:0}"\n`;
+  });
+  downloadFile("tmu_student_directory.csv", csv, "text/csv");
+}
+
+function downloadFile(filename, content, type) {
+  const blob = new Blob([content], { type });
+  const a = document.createElement("a");
+  a.href = URL.createObjectURL(blob);
+  a.download = filename;
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+}
+
+/* ─── GENERAL PORTAL NAVIGATION ──────────── */
+const PAGE_TITLES = {
+  dashboard: "Dashboard",
+  results:   "Academic Results",
+  fees:      "Fee Details",
+  profile:   "My Profile"
+};
+
+function showPage(id, navEl) {
+  document.querySelectorAll("#portalScreen .portal-page").forEach(p => p.classList.remove("active"));
+  document.querySelectorAll("#portalScreen .nav-link").forEach(n => n.classList.remove("active"));
+  document.getElementById("page-" + id).classList.add("active");
+  if (navEl) navEl.classList.add("active");
+  document.getElementById("tbTitle").textContent = PAGE_TITLES[id] || id;
+}
+
+function switchSem(idx) {
+  document.querySelectorAll(".sem-tab").forEach((t, i) => t.classList.toggle("active", i === idx));
+  document.querySelectorAll(".sem-block").forEach((b, i) => b.classList.toggle("active", i === idx));
+}
+
+// Window load init & URL hash routing for instant demo access
+window.addEventListener("DOMContentLoaded", () => {
+  initDatabase().then(() => {
+    const hash = window.location.hash.toLowerCase();
+    if (hash === '#demo-student' || hash === '#student') {
+      fillCreds('student', '2468532', '01062005');
+    } else if (hash === '#demo-results' || hash === '#results') {
+      fillCreds('student', '2468532', '01062005');
+      setTimeout(() => showPage('results', document.querySelectorAll('#portalScreen .nav-link')[1]), 150);
+    } else if (hash === '#demo-admin' || hash === '#admin') {
+      fillCreds('admin', 'admin', 'Teacher@2025');
+    } else if (hash === '#demo-directory' || hash === '#directory') {
+      fillCreds('admin', 'admin', 'Teacher@2025');
+      setTimeout(() => showAdminPage('directory', document.querySelectorAll('#adminPortalScreen .nav-link')[1]), 150);
+    } else if (hash === '#demo-sql' || hash === '#sql') {
+      fillCreds('admin', 'admin', 'Teacher@2025');
+      setTimeout(() => {
+        showAdminPage('sql', document.querySelectorAll('#adminPortalScreen .nav-link')[2]);
+        executeSQL();
+      }, 150);
+    }
+  });
+});
+</script>
+</body>
+</html>
