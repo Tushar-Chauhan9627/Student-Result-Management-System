@@ -526,17 +526,27 @@ print("Exported schema.sql successfully.")
 
 conn.close()
 
-# Save database.json for browser client bundle
-with open("database.json", "w", encoding="utf-8") as f:
-    json.dump({
-        "admin": {
-            "username": "admin",
-            "name": "Dr. Rajesh Sharma (Faculty Master)",
-            "pwd_hash": admin_pwd_hash,
-            "salt": admin_salt,
-            "role": "Faculty Administrator"
-        },
-        "students": students_json_store
-    }, f)
+# Save clean data.js for in-browser client execution
+enrollment_map = {s["enrollment"]: s["roll"] for s in students_json_store.values() if s.get("enrollment")}
+bundle = {
+    "admins": [{
+        "username": "admin",
+        "name": "Dr. Rajesh Sharma (Faculty Master)",
+        "email": "teacher@tmu.ac.in",
+        "role": "Faculty Administrator",
+        "department": "College of Computing Sciences & IT",
+        "password_hash": admin_pwd_hash,
+        "salt": admin_salt
+    }],
+    "enrollment_map": enrollment_map,
+    "students": students_json_store
+}
 
-print(f"Exported database.json (size: {os.path.getsize('database.json') / 1024:.1f} KB)")
+with open("data.js", "w", encoding="utf-8") as f:
+    f.write("// TMU Student Result Management System - Embedded Dataset\n")
+    f.write("// Secure SHA-256 password hashes - Zero plaintext passwords\n")
+    f.write("window.SRMS_DATA = ")
+    f.write(json.dumps(bundle, separators=(',', ':')))
+    f.write(";\n")
+
+print(f"Exported data.js successfully (size: {os.path.getsize('data.js') / 1024:.1f} KB)")

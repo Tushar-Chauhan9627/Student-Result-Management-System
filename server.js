@@ -46,7 +46,7 @@ app.post('/api/auth/login', (req, res) => {
       if (!student) return res.status(401).json({ error: 'Student not found' });
 
       const hash = sha256(password + student.salt);
-      if (hash === student.password_hash || password === '123456' || password === '01062005' || password === '27052007' || password === 'pass2023') {
+      if (hash === student.password_hash) {
         // Return student record without password hash/salt
         const safeStudent = { ...student };
         delete safeStudent.password_hash;
@@ -107,11 +107,20 @@ app.post('/api/admin/query', (req, res) => {
   if (!sql) return res.status(400).json({ error: 'SQL query required' });
 
   const start = Date.now();
-  db.all(sql, [], (err, rows) => {
-    const elapsed = Date.now() - start;
-    if (err) return res.status(400).json({ error: err.message, elapsed });
-    res.json({ rows, rowCount: rows.length, elapsed });
-  });
+  const trimmed = sql.trim().toUpperCase();
+  if (trimmed.startsWith('SELECT') || trimmed.startsWith('PRAGMA') || trimmed.startsWith('EXPLAIN')) {
+    db.all(sql, [], (err, rows) => {
+      const elapsed = Date.now() - start;
+      if (err) return res.status(400).json({ error: err.message, elapsed });
+      res.json({ rows, rowCount: rows.length, elapsed });
+    });
+  } else {
+    db.run(sql, [], function(err) {
+      const elapsed = Date.now() - start;
+      if (err) return res.status(400).json({ error: err.message, elapsed });
+      res.json({ rows: [], rowCount: 0, changes: this.changes, lastID: this.lastID, elapsed });
+    });
+  }
 });
 
 app.listen(PORT, () => {

@@ -498,9 +498,7 @@ input, select, textarea { font-family: 'Sora', sans-serif; }
 .sp-cyan  { color: var(--accent2); }
 
 .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 18px; }
-.grid-3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; }
 .grid-4 { display: grid; grid-template-columns: repeat(4, 1fr); gap: 14px; }
-.grid-5 { display: grid; grid-template-columns: repeat(5, 1fr); gap: 12px; }
 
 .badge {
   display: inline-block;
@@ -693,7 +691,6 @@ tr:hover td { background: rgba(255,255,255,0.02); }
 .ql-sub   { font-size: 11px; color: var(--muted); margin-top: 2px; }
 
 .mb-18  { margin-bottom: 18px; }
-.mt-18  { margin-top: 18px; }
 .fw-600 { font-weight: 600; }
 .text-accent  { color: var(--accent); }
 .text-muted   { color: var(--muted2); }
@@ -1380,7 +1377,7 @@ tr:hover td { background: rgba(255,255,255,0.02); }
           </div>
 
           <div class="filter-bar">
-            <input type="text" id="admSearch" class="search-input" placeholder="Search by Student Name, Roll No, Enrollment, or City..." oninput="handleAdminSearch()"/>
+            <input type="text" id="admSearch" class="search-input" placeholder="Search by Student Name, Roll No, Enrollment, or City..." oninput="handleAdminFilter()"/>
             <select id="admCourseFilter" class="filter-select" onchange="handleAdminFilter()">
               <option value="">All Courses</option>
               <option value="BCA">B.C.A.</option>
@@ -1455,12 +1452,12 @@ tr:hover td { background: rgba(255,255,255,0.02); }
             Quick Query Templates:
           </div>
           <div class="sql-presets">
-            <button class="sql-preset-btn" onclick="setSQL('SELECT roll_no, name, course_name, percentage, attendance FROM students ORDER BY percentage DESC LIMIT 10;')">Top 10 Performers</button>
-            <button class="sql-preset-btn" onclick="setSQL('SELECT roll_no, name, course_name, attendance FROM students WHERE attendance < 75 ORDER BY attendance ASC;')">Attendance Defaulters (&lt; 75%)</button>
-            <button class="sql-preset-btn" onclick="setSQL('SELECT course_name, count(*) AS count, avg(percentage) AS avg_score FROM students GROUP BY course_name ORDER BY count DESC;')">Course Enrollment Summary</button>
-            <button class="sql-preset-btn" onclick="setSQL('SELECT roll_no, name, course_name, fees_due FROM students WHERE fees_due > 0 ORDER BY fees_due DESC LIMIT 15;')">Outstanding Fee Defaulters</button>
-            <button class="sql-preset-btn" onclick="setSQL('SELECT gender, count(*) AS count FROM students GROUP BY gender;')">Gender Diversity Statistics</button>
-            <button class="sql-preset-btn" onclick="setSQL('SELECT s.roll_no, s.name, m.subject_name, m.internal, m.external, m.total, m.grade FROM students s JOIN marks m ON s.roll_no = m.roll_no WHERE s.roll_no = '2468532';')">Inspect Sanjay Kumar Marks</button>
+            <button class="sql-preset-btn" onclick="applyPreset(0)">Top 10 Performers</button>
+            <button class="sql-preset-btn" onclick="applyPreset(1)">Attendance Defaulters (&lt; 75%)</button>
+            <button class="sql-preset-btn" onclick="applyPreset(2)">Course Enrollment Summary</button>
+            <button class="sql-preset-btn" onclick="applyPreset(3)">Outstanding Fee Defaulters</button>
+            <button class="sql-preset-btn" onclick="applyPreset(4)">Gender Diversity Statistics</button>
+            <button class="sql-preset-btn" onclick="applyPreset(5)">Inspect Sanjay Kumar Marks</button>
           </div>
 
           <textarea id="sqlInput" class="sql-textarea" spellcheck="false">SELECT roll_no, name, course_name, percentage, attendance, fees_due FROM students ORDER BY percentage DESC LIMIT 10;</textarea>
@@ -1842,8 +1839,8 @@ async function doLogin() {
 
   if (student) {
     const computedHash = await sha256(passInput + student.salt);
-    // Secure hash check
-    if (computedHash === student.pwd_hash || passInput === "01062005" || passInput === "27052007" || passInput === "pass2023" || passInput === "123456") {
+    // Secure cryptographic hash check
+    if (computedHash === student.pwd_hash) {
       currentStudent = student;
       loadPortal();
       document.getElementById("loginScreen").classList.remove("show");
@@ -2191,11 +2188,6 @@ function updateAdminOverviewKPIs() {
   if (defTable) defTable.innerHTML = defHtml;
 }
 
-function handleAdminSearch() {
-  const q = document.getElementById("admSearch").value.toLowerCase().trim();
-  applyAdminFilters(q);
-}
-
 function handleAdminFilter() {
   const q = document.getElementById("admSearch").value.toLowerCase().trim();
   applyAdminFilters(q);
@@ -2419,6 +2411,19 @@ async function handleCreateStudent(e) {
 }
 
 /* ─── LIVE SQL QUERY EXECUTION ───────────── */
+const SQL_PRESETS = [
+  "SELECT roll_no, name, course_name, percentage, attendance FROM students ORDER BY percentage DESC LIMIT 10;",
+  "SELECT roll_no, name, course_name, attendance FROM students WHERE attendance < 75 ORDER BY attendance ASC;",
+  "SELECT course_name, count(*) AS count, avg(percentage) AS avg_score FROM students GROUP BY course_name ORDER BY count DESC;",
+  "SELECT roll_no, name, course_name, fees_due FROM students WHERE fees_due > 0 ORDER BY fees_due DESC LIMIT 15;",
+  "SELECT gender, count(*) AS count FROM students GROUP BY gender;",
+  "SELECT s.roll_no, s.name, m.subject_name, m.internal, m.external, m.total, m.grade FROM students s JOIN marks m ON s.roll_no = m.roll_no WHERE s.roll_no = '2468532';"
+];
+
+function applyPreset(idx) {
+  if (SQL_PRESETS[idx]) setSQL(SQL_PRESETS[idx]);
+}
+
 function setSQL(query) {
   document.getElementById("sqlInput").value = query;
   executeSQL();
