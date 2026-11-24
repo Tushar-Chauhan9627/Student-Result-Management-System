@@ -5,6 +5,7 @@ import json
 import os
 import sqlite3
 import random
+import datetime
 
 # Seed for deterministic generation
 random.seed(42)
@@ -143,6 +144,32 @@ def get_grade(pct):
 
 def hash_pass(pwd, salt):
     return hashlib.sha256((pwd + salt).encode('utf-8')).hexdigest()
+
+def format_excel_dob(raw_val):
+    if not raw_val:
+        return "2005-01-01"
+    try:
+        f = float(raw_val)
+        dt = datetime.datetime(1899, 12, 30) + datetime.timedelta(days=f)
+        return dt.strftime("%Y-%m-%d")
+    except Exception:
+        s = str(raw_val).strip()
+        if len(s) == 8 and s.isdigit():
+            return f"{s[4:]}-{s[2:4]}-{s[:2]}"
+        return s
+
+def mask_mobile(m):
+    digits = ''.join(c for c in str(m) if c.isdigit())
+    if len(digits) >= 10:
+        return f"+91 {digits[:2]}*** ***{digits[-3:]}"
+    elif len(digits) >= 4:
+        return f"+91 *** ***{digits[-3:]}"
+    return "+91 98*** ***123"
+
+def mask_address(city, state):
+    c = str(city).strip().title() if city else "Moradabad"
+    s = str(state).strip().upper() if state else "UP"
+    return f"{c}, {s}"
 
 # Setup SQLite database
 db_path = "students.db"
@@ -315,7 +342,9 @@ for r in raw_students:
     batch = r[61] if len(r) > 61 and r[61] else "2024-2027"
     hostel = r[65] if len(r) > 65 else "FALSE"
     room_no = r[88] if len(r) > 88 else ""
-    password = r[72] if len(r) > 72 and r[72] else "123456"
+    dob_formatted = format_excel_dob(dob)
+    # Default password is their DOB (YYYY-MM-DD or DDMMYYYY)
+    password = dob_formatted
 
     # Derive unique Roll Number
     # If enrollment has digits (e.g. TCA2468532 -> 2468532)
@@ -346,22 +375,29 @@ for r in raw_students:
     # Specific preset overrides for existing demo accounts to maintain 100% backward compatibility
     if roll_no == "2468532":
         name = "Sanjay Kumar"
-        password = "01062005"
+        dob_formatted = "2005-06-01"
+        password = "2005-06-01"
         course_name = "BCA"
         section = "C"
     elif roll_no == "2468297":
         name = "Manmohan Singh"
-        password = "27052007"
+        dob_formatted = "2007-05-27"
+        password = "2007-05-27"
         course_name = "BCA"
         section = "C"
     elif roll_no == "2468497":
         name = "Ritik Singh"
-        password = "pass2023"
+        dob_formatted = "2005-08-15"
+        password = "2005-08-15"
         course_name = "B.Tech Mechanical"
         section = "A"
 
     salt = f"salt_{roll_no}_{random.randint(1000, 9999)}"
     pwd_hash = hash_pass(password, salt)
+
+    safe_phone = mask_mobile(mobile)
+    safe_guardian = mask_mobile(guardian_mobile)
+    safe_address = mask_address(city, state)
 
     # Attendance & Fees
     attendance = random.randint(76, 95)
@@ -399,8 +435,8 @@ for r in raw_students:
     """, (
         roll_no, enrollment, app_no, name, father, mother,
         course_code, course_name, "College of Computing Sciences & IT, TMU", acad_year, sem,
-        section, batch, email, mobile, guardian_mobile, dob, gender, category,
-        city, city, state, address, pct, attendance,
+        section, batch, email, safe_phone, safe_guardian, dob_formatted, gender, category,
+        city.strip().title() if city else "Moradabad", city.strip().title() if city else "Moradabad", state.strip().upper() if state else "UP", safe_address, pct, attendance,
         total_fee, paid_fee, due_fee, status, hostel, room_no,
         pwd_hash, salt, initials
     ))
@@ -494,13 +530,13 @@ for r in raw_students:
         "batch": batch,
         "section": section,
         "email": email,
-        "phone": mobile,
-        "dob": dob,
+        "phone": safe_phone,
+        "dob": dob_formatted,
         "gender": gender,
         "category": category,
-        "city": city,
-        "state": state,
-        "address": address if address else f"{city}, {state}",
+        "city": city.strip().title() if city else "Moradabad",
+        "state": state.strip().upper() if state else "UP",
+        "address": safe_address,
         "attendance": attendance,
         "status": status,
         "percentage": pct,
@@ -517,13 +553,6 @@ for r in raw_students:
 
 conn.commit()
 print(f"Successfully populated SQLite database with {len(processed_rolls)} students!")
-
-# Create schema.sql export
-with open("schema.sql", "w", encoding="utf-8") as f:
-    for line in conn.iterdump():
-        f.write(f"{line}\n")
-print("Exported schema.sql successfully.")
-
 conn.close()
 
 # Save clean data.js for in-browser client execution

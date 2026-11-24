@@ -963,19 +963,19 @@ tr:hover td { background: rgba(255,255,255,0.02); }
         <span>🔑 Demo System Credentials</span>
         <span class="badge badge-cyan">Click Row to Auto-Fill</span>
       </div>
-      <div class="demo-cred-row" style="cursor:pointer" onclick="fillCreds('student', '2468532', '01062005')">
+      <div class="demo-cred-row" style="cursor:pointer" onclick="fillCreds('student', '2468532', '2005-06-01')">
         <span class="dcr-label">Student</span><span class="dcr-val">2468532</span>
-        <span class="dcr-label">Password</span><span class="dcr-val">01062005</span>
+        <span class="dcr-label">DOB / Pwd</span><span class="dcr-val">2005-06-01</span>
         <span class="dcr-course">BCA (Sanjay)</span>
       </div>
-      <div class="demo-cred-row" style="cursor:pointer" onclick="fillCreds('student', '2468297', '27052007')">
+      <div class="demo-cred-row" style="cursor:pointer" onclick="fillCreds('student', '2468297', '2007-05-27')">
         <span class="dcr-label">Student</span><span class="dcr-val">2468297</span>
-        <span class="dcr-label">Password</span><span class="dcr-val">27052007</span>
+        <span class="dcr-label">DOB / Pwd</span><span class="dcr-val">2007-05-27</span>
         <span class="dcr-course">BCA (Manmohan)</span>
       </div>
-      <div class="demo-cred-row" style="cursor:pointer" onclick="fillCreds('student', '2468497', 'pass2023')">
+      <div class="demo-cred-row" style="cursor:pointer" onclick="fillCreds('student', '2468497', '2005-08-15')">
         <span class="dcr-label">Student</span><span class="dcr-val">2468497</span>
-        <span class="dcr-label">Password</span><span class="dcr-val">pass2023</span>
+        <span class="dcr-label">DOB / Pwd</span><span class="dcr-val">2005-08-15</span>
         <span class="dcr-course">B.Tech (Ritik)</span>
       </div>
       <div class="demo-cred-row dcr-admin-highlight" style="cursor:pointer" onclick="fillCreds('admin', 'admin', 'Teacher@2025')">
@@ -998,7 +998,7 @@ tr:hover td { background: rgba(255,255,255,0.02); }
 
     <div class="login-form-icon" id="formIcon">🎓</div>
     <div class="login-form-title" id="formTitle">Student Login</div>
-    <div class="login-form-sub" id="formSub">Sign in with your Roll Number / Enrollment &amp; Password</div>
+    <div class="login-form-sub" id="formSub">Sign in with your Roll Number / Enrollment &amp; Default Password (DOB)</div>
     <div class="error-banner" id="errorBanner">⚠️ Invalid Credentials. Please check your details and try again.</div>
 
     <div class="form-group">
@@ -1006,10 +1006,13 @@ tr:hover td { background: rgba(255,255,255,0.02); }
       <input type="text" class="form-input" id="inputRoll" placeholder="e.g. 2468532 or TCA2468532" autocomplete="off"/>
     </div>
     <div class="form-group">
-      <label class="form-label">Password</label>
-      <input type="password" class="form-input" id="inputPass" placeholder="Enter password"/>
+      <label class="form-label" id="labelPass">Password <span style="font-weight:400;text-transform:none;color:var(--accent2);font-size:10px">(Default: DOB YYYY-MM-DD or DDMMYYYY)</span></label>
+      <input type="password" class="form-input" id="inputPass" placeholder="e.g. 2005-06-01 or 01062005"/>
     </div>
     <button class="login-submit-btn" id="loginBtn" onclick="doLogin()">Sign In to Portal →</button>
+    <div id="studentRegPrompt" style="text-align:center;margin-top:14px;font-size:12px;color:var(--muted2)">
+      New Student? <a href="javascript:void(0)" onclick="openStudentRegisterModal()" style="color:var(--accent2);font-weight:600;text-decoration:none">Register Here →</a>
+    </div>
     <div class="login-footer-note">
       <span>🔒 Cryptographically Hash Verified</span> &nbsp;·&nbsp;
       <span>SQLite Database Engine v3</span>
@@ -1527,7 +1530,7 @@ tr:hover td { background: rgba(255,255,255,0.02); }
      STUDENT FILE VIEW & EDIT MODAL
 ══════════════════════════════════════════ -->
 <div class="modal-overlay" id="studentDetailModal">
-  <div class="modal-box">
+  <div class="modal-box" style="max-width:760px">
     <div class="modal-header">
       <div style="font-size:16px;font-weight:700" id="modTitle">Student Record Master File</div>
       <button class="modal-close" onclick="closeStudentModal()">✕</button>
@@ -1537,28 +1540,32 @@ tr:hover td { background: rgba(255,255,255,0.02); }
 </div>
 
 <!-- ══════════════════════════════════════════
-     ADD NEW STUDENT MODAL
+     TEACHER: ADD NEW STUDENT MODAL
 ══════════════════════════════════════════ -->
 <div class="modal-overlay" id="addStudentModal">
   <div class="modal-box" style="max-width:620px">
     <div class="modal-header">
-      <div style="font-size:16px;font-weight:700">➕ Register New Student into Database</div>
+      <div style="font-size:16px;font-weight:700">➕ Register New Student (Teacher Console)</div>
       <button class="modal-close" onclick="closeAddStudentModal()">✕</button>
     </div>
     <form onsubmit="handleCreateStudent(event)" style="display:flex;flex-direction:column;gap:14px;">
       <div class="grid-2">
         <div class="form-group" style="margin:0">
-          <label class="form-label">Full Name</label>
+          <label class="form-label">Full Name *</label>
           <input type="text" class="form-input" id="new_name" required placeholder="e.g. Ankit Sharma"/>
         </div>
         <div class="form-group" style="margin:0">
-          <label class="form-label">Roll Number</label>
+          <label class="form-label">Roll Number (Unique ID) *</label>
           <input type="text" class="form-input" id="new_roll" required placeholder="e.g. 2405999"/>
         </div>
       </div>
       <div class="grid-2">
         <div class="form-group" style="margin:0">
-          <label class="form-label">Course</label>
+          <label class="form-label">Date of Birth (DOB) *</label>
+          <input type="date" class="form-input" id="new_dob" required/>
+        </div>
+        <div class="form-group" style="margin:0">
+          <label class="form-label">Course *</label>
           <select class="form-input" id="new_course">
             <option value="B.C.A.">B.C.A.</option>
             <option value="B.TECH-(COMPUTER SCIENCE)">B.Tech CSE</option>
@@ -1567,19 +1574,15 @@ tr:hover td { background: rgba(255,255,255,0.02); }
             <option value="B.SC (ANIMATION)">B.Sc Animation</option>
           </select>
         </div>
+      </div>
+      <div class="grid-2">
         <div class="form-group" style="margin:0">
           <label class="form-label">Section</label>
           <input type="text" class="form-input" id="new_sec" value="A" placeholder="A, B, C..."/>
         </div>
-      </div>
-      <div class="grid-2">
         <div class="form-group" style="margin:0">
           <label class="form-label">Email</label>
           <input type="email" class="form-input" id="new_email" placeholder="student@tmu.ac.in"/>
-        </div>
-        <div class="form-group" style="margin:0">
-          <label class="form-label">Mobile Number</label>
-          <input type="text" class="form-input" id="new_phone" placeholder="9876543210"/>
         </div>
       </div>
       <div class="grid-2">
@@ -1588,13 +1591,195 @@ tr:hover td { background: rgba(255,255,255,0.02); }
           <input type="text" class="form-input" id="new_city" value="Moradabad"/>
         </div>
         <div class="form-group" style="margin:0">
-          <label class="form-label">Set Password</label>
-          <input type="password" class="form-input" id="new_pass" required value="student123"/>
+          <label class="form-label">Mobile Number</label>
+          <input type="text" class="form-input" id="new_phone" placeholder="+91 98*** ***123"/>
         </div>
+      </div>
+      <div style="font-size:11px;color:var(--muted2);padding:6px 10px;background:rgba(56,217,196,0.08);border-radius:6px;border:1px solid rgba(56,217,196,0.25)">
+        🔑 Default Password will be set to the student's Date of Birth (<span class="mono" style="color:var(--accent2)">YYYY-MM-DD</span>).
       </div>
       <div style="display:flex;justify-content:flex-end;gap:10px;margin-top:10px">
         <button type="button" class="action-btn action-btn-secondary" onclick="closeAddStudentModal()">Cancel</button>
         <button type="submit" class="action-btn action-btn-primary">Commit to SQL Database →</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════
+     TEACHER: EDIT STUDENT DETAILS MODAL
+══════════════════════════════════════════ -->
+<div class="modal-overlay" id="editStudentModal">
+  <div class="modal-box" style="max-width:620px">
+    <div class="modal-header">
+      <div style="font-size:16px;font-weight:700">✏️ Edit / Correct Student Record</div>
+      <button class="modal-close" onclick="closeEditStudentModal()">✕</button>
+    </div>
+    <form onsubmit="handleSaveStudentEdit(event)" style="display:flex;flex-direction:column;gap:14px;">
+      <input type="hidden" id="edit_roll"/>
+      <div class="grid-2">
+        <div class="form-group" style="margin:0">
+          <label class="form-label">Roll Number (Unique ID)</label>
+          <input type="text" class="form-input mono" id="edit_roll_display" disabled style="opacity:0.75"/>
+        </div>
+        <div class="form-group" style="margin:0">
+          <label class="form-label">Full Name *</label>
+          <input type="text" class="form-input" id="edit_name" required/>
+        </div>
+      </div>
+      <div class="grid-2">
+        <div class="form-group" style="margin:0">
+          <label class="form-label">Date of Birth (DOB) *</label>
+          <input type="date" class="form-input" id="edit_dob" required/>
+        </div>
+        <div class="form-group" style="margin:0">
+          <label class="form-label">Course Program *</label>
+          <input type="text" class="form-input" id="edit_course" required/>
+        </div>
+      </div>
+      <div class="grid-2">
+        <div class="form-group" style="margin:0">
+          <label class="form-label">Section</label>
+          <input type="text" class="form-input" id="edit_sec"/>
+        </div>
+        <div class="form-group" style="margin:0">
+          <label class="form-label">Email</label>
+          <input type="email" class="form-input" id="edit_email"/>
+        </div>
+      </div>
+      <div class="grid-2">
+        <div class="form-group" style="margin:0">
+          <label class="form-label">City</label>
+          <input type="text" class="form-input" id="edit_city"/>
+        </div>
+        <div class="form-group" style="margin:0">
+          <label class="form-label">Recorded Attendance (%)</label>
+          <input type="number" class="form-input" id="edit_attendance" min="0" max="100"/>
+        </div>
+      </div>
+      <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px">
+        <div class="form-group" style="margin:0">
+          <label class="form-label">Annual Fee (₹)</label>
+          <input type="number" class="form-input" id="edit_fee_total"/>
+        </div>
+        <div class="form-group" style="margin:0">
+          <label class="form-label">Fee Paid (₹)</label>
+          <input type="number" class="form-input" id="edit_fee_paid"/>
+        </div>
+        <div class="form-group" style="margin:0">
+          <label class="form-label">Fee Due (₹)</label>
+          <input type="number" class="form-input" id="edit_fee_due"/>
+        </div>
+      </div>
+      <div style="display:flex;justify-content:flex-end;gap:10px;margin-top:10px">
+        <button type="button" class="action-btn action-btn-secondary" onclick="closeEditStudentModal()">Cancel</button>
+        <button type="submit" class="action-btn action-btn-primary">Save Changes &amp; Sync Portal →</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════
+     TEACHER: ENTER / UPDATE MARKS MODAL
+══════════════════════════════════════════ -->
+<div class="modal-overlay" id="marksEditModal">
+  <div class="modal-box" style="max-width:520px">
+    <div class="modal-header">
+      <div style="font-size:16px;font-weight:700" id="marksModalTitle">Enter / Update Subject Marks</div>
+      <button class="modal-close" onclick="closeMarksModal()">✕</button>
+    </div>
+    <form onsubmit="handleSaveMarks(event)" style="display:flex;flex-direction:column;gap:14px;">
+      <input type="hidden" id="mark_roll"/>
+      <input type="hidden" id="mark_sem_idx"/>
+      <input type="hidden" id="mark_sub_idx"/>
+      <div class="form-group" style="margin:0">
+        <label class="form-label">Subject Name *</label>
+        <input type="text" class="form-input" id="mark_sub_name" required placeholder="e.g. Relational DBMS & SQL Architecture"/>
+      </div>
+      <div class="grid-2">
+        <div class="form-group" style="margin:0">
+          <label class="form-label">Subject Code *</label>
+          <input type="text" class="form-input mono" id="mark_sub_code" required placeholder="e.g. CS102"/>
+        </div>
+        <div class="form-group" style="margin:0">
+          <label class="form-label">Credits *</label>
+          <input type="number" class="form-input" id="mark_sub_cr" required min="1" max="6" value="4"/>
+        </div>
+      </div>
+      <div class="grid-2">
+        <div class="form-group" style="margin:0">
+          <label class="form-label">Internal Marks (Max 40) *</label>
+          <input type="number" class="form-input" id="mark_int" required min="0" max="40" value="30"/>
+        </div>
+        <div class="form-group" style="margin:0">
+          <label class="form-label">External Marks (Max 60) *</label>
+          <input type="number" class="form-input" id="mark_ext" required min="0" max="60" value="45"/>
+        </div>
+      </div>
+      <div style="display:flex;justify-content:flex-end;gap:10px;margin-top:10px">
+        <button type="button" class="action-btn action-btn-secondary" onclick="closeMarksModal()">Cancel</button>
+        <button type="submit" class="action-btn action-btn-primary">Save Marks &amp; Recalculate SGPA →</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════
+     STUDENT SELF-REGISTRATION MODAL
+══════════════════════════════════════════ -->
+<div class="modal-overlay" id="studentRegisterModal">
+  <div class="modal-box" style="max-width:540px">
+    <div class="modal-header">
+      <div style="font-size:16px;font-weight:700">🎓 Student Self-Registration</div>
+      <button class="modal-close" onclick="closeStudentRegisterModal()">✕</button>
+    </div>
+    <form onsubmit="handleStudentSelfRegister(event)" style="display:flex;flex-direction:column;gap:14px;">
+      <div class="grid-2">
+        <div class="form-group" style="margin:0">
+          <label class="form-label">Full Name *</label>
+          <input type="text" class="form-input" id="reg_name" required placeholder="e.g. Rahul Sharma"/>
+        </div>
+        <div class="form-group" style="margin:0">
+          <label class="form-label">Roll Number (Unique) *</label>
+          <input type="text" class="form-input" id="reg_roll" required placeholder="e.g. 2409555"/>
+        </div>
+      </div>
+      <div class="grid-2">
+        <div class="form-group" style="margin:0">
+          <label class="form-label">Date of Birth (Default Password) *</label>
+          <input type="date" class="form-input" id="reg_dob" required/>
+        </div>
+        <div class="form-group" style="margin:0">
+          <label class="form-label">Course *</label>
+          <select class="form-input" id="reg_course">
+            <option value="B.C.A.">B.C.A.</option>
+            <option value="B.TECH-(COMPUTER SCIENCE)">B.Tech CSE</option>
+            <option value="B.TECH-CSE-SPECIALIZATION IN ARTIFICIAL INTELLIGENCE, MACHINE LEARNING & DEEP LEARNING">B.Tech AI & ML</option>
+            <option value="MCA">M.C.A.</option>
+            <option value="B.SC (ANIMATION)">B.Sc Animation</option>
+          </select>
+        </div>
+      </div>
+      <div class="grid-2">
+        <div class="form-group" style="margin:0">
+          <label class="form-label">Section</label>
+          <input type="text" class="form-input" id="reg_sec" value="A" placeholder="A, B, C..."/>
+        </div>
+        <div class="form-group" style="margin:0">
+          <label class="form-label">Email</label>
+          <input type="email" class="form-input" id="reg_email" placeholder="rahul@tmu.ac.in"/>
+        </div>
+      </div>
+      <div class="form-group" style="margin:0">
+        <label class="form-label">City</label>
+        <input type="text" class="form-input" id="reg_city" value="Moradabad"/>
+      </div>
+      <div style="font-size:11px;color:var(--muted2);padding:6px 10px;background:rgba(21,95,223,0.08);border-radius:6px;border:1px solid rgba(21,95,223,0.25)">
+        🔒 Your Date of Birth will be set as your initial login password. You can log in using format <span class="mono" style="color:var(--accent2)">YYYY-MM-DD</span> or <span class="mono" style="color:var(--accent2)">DDMMYYYY</span>.
+      </div>
+      <div style="display:flex;justify-content:flex-end;gap:10px;margin-top:10px">
+        <button type="button" class="action-btn action-btn-secondary" onclick="closeStudentRegisterModal()">Cancel</button>
+        <button type="submit" class="action-btn action-btn-primary">Complete Registration →</button>
       </div>
     </form>
   </div>
@@ -1618,14 +1803,115 @@ const adminPageSize = 15;
 let adminTotalPages = 1;
 let lastQueryResult = null;
 
+/* ─── REAL-TIME STORAGE & SYNC ───────────── */
+const STORAGE_KEY = "srms_custom_data_v2";
+
+function loadCentralData() {
+  const saved = localStorage.getItem(STORAGE_KEY);
+  if (saved) {
+    try {
+      const parsed = JSON.parse(saved);
+      if (parsed && parsed.students) {
+        window.SRMS_DATA = parsed;
+      }
+    } catch(e) {
+      console.warn("Storage load exception:", e);
+    }
+  }
+}
+
+function persistCentralData() {
+  if (window.SRMS_DATA) {
+    try {
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(window.SRMS_DATA));
+    } catch(e) {
+      console.warn("Storage save exception:", e);
+    }
+  }
+}
+
+function syncLiveStudentPortal(roll) {
+  persistCentralData();
+  // Live reactive update on open student portal view
+  if (currentStudent && (currentStudent.roll === roll || currentStudent.enrollment === roll)) {
+    currentStudent = window.SRMS_DATA.students[roll] || currentStudent;
+    loadPortal();
+  }
+  // Refresh admin tables if admin is active
+  if (window.SRMS_DATA && window.SRMS_DATA.students) {
+    adminStudentsList = Object.values(window.SRMS_DATA.students);
+    filteredAdminList = [...adminStudentsList];
+    renderAdminTable();
+    updateAdminOverviewKPIs();
+  }
+}
+
+window.addEventListener("storage", e => {
+  if (e.key === STORAGE_KEY && e.newValue) {
+    try {
+      window.SRMS_DATA = JSON.parse(e.newValue);
+      if (currentStudent && window.SRMS_DATA.students[currentStudent.roll]) {
+        currentStudent = window.SRMS_DATA.students[currentStudent.roll];
+        loadPortal();
+      }
+      if (currentRole === "admin") {
+        initAdminDataFromDB();
+      }
+    } catch(err) {}
+  }
+});
+
 /* ─── CRYPTOGRAPHIC SECURITY HELPERS ─────── */
 async function sha256(str) {
   const buf = await crypto.subtle.digest("SHA-256", new TextEncoder().encode(str));
   return Array.from(new Uint8Array(buf)).map(b => b.toString(16).padStart(2, '0')).join('');
 }
 
+function normalizeDateVariants(str) {
+  if (!str) return [];
+  const clean = str.trim();
+  const variants = [clean];
+  
+  // YYYY-MM-DD
+  const m1 = clean.match(/^(\d{4})[-/.](\d{1,2})[-/.](\d{1,2})$/);
+  if (m1) {
+    const [_, y, m, d] = m1;
+    const mm = m.padStart(2, '0');
+    const dd = d.padStart(2, '0');
+    variants.push(`${y}-${mm}-${dd}`);
+    variants.push(`${dd}${mm}${y}`);
+    variants.push(`${dd}-${mm}-${y}`);
+    variants.push(`${dd}/${mm}/${y}`);
+  }
+  
+  // DDMMYYYY
+  const m2 = clean.match(/^(\d{2})(\d{2})(\d{4})$/);
+  if (m2) {
+    const [_, d, m, y] = m2;
+    variants.push(`${y}-${m}-${d}`);
+    variants.push(`${d}${m}${y}`);
+    variants.push(`${d}-${m}-${y}`);
+    variants.push(`${d}/${m}/${y}`);
+  }
+
+  // DD-MM-YYYY or DD/MM/YYYY
+  const m3 = clean.match(/^(\d{1,2})[-/.](\d{1,2})[-/.](\d{4})$/);
+  if (m3) {
+    const [_, d, m, y] = m3;
+    const mm = m.padStart(2, '0');
+    const dd = d.padStart(2, '0');
+    variants.push(`${y}-${mm}-${dd}`);
+    variants.push(`${dd}${mm}${y}`);
+    variants.push(`${dd}-${mm}-${y}`);
+    variants.push(`${dd}/${mm}/${y}`);
+  }
+  
+  return [...new Set(variants)];
+}
+
 /* ─── SQLITE WASM INITIALIZATION ─────────── */
 async function initDatabase() {
+  loadCentralData();
   const badge = document.getElementById("sqlEngineBadge");
   try {
     const SQL = await initSqlJs({
@@ -1714,11 +2000,12 @@ function buildTablesFromEmbeddedData() {
     ]);
   }
   stmt.free();
-  console.log("Seeded SQLite in-memory database with 1,461 students.");
+  console.log("Seeded SQLite in-memory database with students.");
   initAdminDataFromDB();
 }
 
 function initAdminDataFromDB() {
+  loadCentralData();
   if (window.SRMS_DATA && window.SRMS_DATA.students) {
     adminStudentsList = Object.values(window.SRMS_DATA.students);
   } else if (db) {
@@ -1728,6 +2015,9 @@ function initAdminDataFromDB() {
       adminStudentsList = res[0].values.map(row => {
         const obj = {};
         cols.forEach((c, idx) => obj[c] = row[idx]);
+        obj.roll = obj.roll_no;
+        obj.course = obj.course_name;
+        obj.fees = { total: obj.fees_total, paid: obj.fees_paid, due: obj.fees_due };
         return obj;
       });
     }
@@ -1747,24 +2037,33 @@ function switchLoginRole(role) {
   const title = document.getElementById("formTitle");
   const sub   = document.getElementById("formSub");
   const icon  = document.getElementById("formIcon");
-  const lbl   = document.getElementById("labelUser");
+  const lblU  = document.getElementById("labelUser");
+  const lblP  = document.getElementById("labelPass");
   const inpU  = document.getElementById("inputRoll");
+  const inpP  = document.getElementById("inputPass");
   const btn   = document.getElementById("loginBtn");
+  const regPr = document.getElementById("studentRegPrompt");
 
   if (role === "admin") {
     icon.textContent = "👨‍🏫";
     title.textContent = "Faculty Master Login";
     sub.textContent   = "Authorized Dean & Teacher Administrative Access";
-    lbl.textContent   = "Faculty Username or ID";
+    lblU.textContent   = "Faculty Username or ID";
+    if (lblP) lblP.innerHTML = 'Faculty Password';
     inpU.placeholder  = "e.g. admin or teacher@tmu.ac.in";
+    inpP.placeholder  = "Enter faculty password";
     btn.textContent   = "Open Master Console →";
+    if (regPr) regPr.style.display = "none";
   } else {
     icon.textContent = "🎓";
     title.textContent = "Student Login";
-    sub.textContent   = "Sign in with your Roll Number / Enrollment & Password";
-    lbl.textContent   = "Roll Number or Enrollment No.";
+    sub.textContent   = "Sign in with your Roll Number / Enrollment & Default Password (DOB)";
+    lblU.textContent   = "Roll Number or Enrollment No.";
+    if (lblP) lblP.innerHTML = 'Password <span style="font-weight:400;text-transform:none;color:var(--accent2);font-size:10px">(Default: DOB YYYY-MM-DD or DDMMYYYY)</span>';
     inpU.placeholder  = "e.g. 2468532 or TCA2468532";
+    inpP.placeholder  = "e.g. 2005-06-01 or 01062005";
     btn.textContent   = "Sign In to Portal →";
+    if (regPr) regPr.style.display = "block";
   }
 }
 
@@ -1795,7 +2094,6 @@ async function doLogin() {
   if (currentRole === "admin") {
     const adminUser = window.SRMS_DATA ? window.SRMS_DATA.admins.find(a => a.username.toLowerCase() === userInput.toLowerCase() || a.email.toLowerCase() === userInput.toLowerCase()) : null;
     
-    // Check master password (demo pass: Teacher@2025 or Dean@2025)
     let authenticated = false;
     if (adminUser) {
       const computedHash = await sha256(passInput + adminUser.salt);
@@ -1803,9 +2101,6 @@ async function doLogin() {
         authenticated = true;
         currentAdmin = adminUser;
       }
-    } else if (userInput.toLowerCase() === "admin" && passInput === "Teacher@2025") {
-      authenticated = true;
-      currentAdmin = { full_name: "Dr. Rajesh Sharma", role: "Faculty Administrator", username: "admin" };
     }
 
     if (authenticated) {
@@ -1814,7 +2109,7 @@ async function doLogin() {
       initAdminDataFromDB();
       return;
     } else {
-      errBanner.textContent = "⚠️ Invalid Faculty Credentials. Try 'admin' / 'Teacher@2025'.";
+      errBanner.textContent = "⚠️ Invalid Faculty Credentials. Access denied.";
       errBanner.classList.add("show");
       return;
     }
@@ -1822,14 +2117,12 @@ async function doLogin() {
 
   // 2. STUDENT AUTHENTICATION
   let roll = userInput;
-  // Check if user entered enrollment number (e.g. TCA2468532)
   if (window.SRMS_DATA && window.SRMS_DATA.enrollment_map && window.SRMS_DATA.enrollment_map[userInput.toUpperCase()]) {
     roll = window.SRMS_DATA.enrollment_map[userInput.toUpperCase()];
   }
 
   let student = window.SRMS_DATA && window.SRMS_DATA.students ? window.SRMS_DATA.students[roll] : null;
 
-  // Fallback to searching by enrollment or stripped digits
   if (!student && window.SRMS_DATA) {
     const digits = userInput.replace(/\D/g, '');
     if (digits && window.SRMS_DATA.students[digits]) {
@@ -1838,18 +2131,20 @@ async function doLogin() {
   }
 
   if (student) {
-    const computedHash = await sha256(passInput + student.salt);
-    // Secure cryptographic hash check
-    if (computedHash === student.pwd_hash) {
-      currentStudent = student;
-      loadPortal();
-      document.getElementById("loginScreen").classList.remove("show");
-      document.getElementById("portalScreen").classList.add("show");
-      return;
+    const variants = normalizeDateVariants(passInput);
+    for (const v of variants) {
+      const computedHash = await sha256(v + student.salt);
+      if (computedHash === student.pwd_hash) {
+        currentStudent = student;
+        loadPortal();
+        document.getElementById("loginScreen").classList.remove("show");
+        document.getElementById("portalScreen").classList.add("show");
+        return;
+      }
     }
   }
 
-  errBanner.textContent = "⚠️ Invalid Roll Number or Password. Please try again.";
+  errBanner.textContent = "⚠️ Invalid Roll Number or Password (DOB). Please try again.";
   errBanner.classList.add("show");
 }
 
@@ -2262,9 +2557,52 @@ function changeAdminPage(newPage) {
   renderAdminTable();
 }
 
-/* ─── STUDENT INSPECT & EDIT MODAL ───────── */
+/* ─── DATA INTEGRITY & GRADING HELPERS ───── */
+function isRollNumberTaken(roll) {
+  const cleanRoll = String(roll).trim();
+  if (!cleanRoll) return false;
+  if (window.SRMS_DATA && window.SRMS_DATA.students && window.SRMS_DATA.students[cleanRoll]) return true;
+  if (adminStudentsList && adminStudentsList.some(s => String(s.roll).trim() === cleanRoll || String(s.roll_no).trim() === cleanRoll)) return true;
+  if (db) {
+    try {
+      const res = db.exec("SELECT roll_no FROM students WHERE roll_no = ?", [cleanRoll]);
+      if (res && res.length && res[0].values.length) return true;
+    } catch(e) {}
+  }
+  return false;
+}
+
+function getGradeFromScore(tot) {
+  if (tot >= 90) return { grade: "O", gp: 10, cls: "gO" };
+  if (tot >= 80) return { grade: "A+", gp: 9, cls: "gAp" };
+  if (tot >= 70) return { grade: "A", gp: 8, cls: "gA" };
+  if (tot >= 60) return { grade: "B+", gp: 7, cls: "gBp" };
+  if (tot >= 50) return { grade: "B", gp: 6, cls: "gB" };
+  if (tot >= 40) return { grade: "C", gp: 5, cls: "gC" };
+  return { grade: "F", gp: 0, cls: "gF" };
+}
+
+function recomputeSemesterSGPA(sem) {
+  let tc = 0, tp = 0;
+  (sem.subjects || []).forEach(sub => {
+    const cr = Number(sub.cr || sub.credits || 4);
+    const tot = (Number(sub.int) || 0) + (Number(sub.ext) || 0);
+    const gInfo = getGradeFromScore(tot);
+    sub.total = tot;
+    sub.grade = gInfo.grade;
+    sub.g = gInfo.grade;
+    sub.gp = gInfo.gp;
+    sub.cls = gInfo.cls;
+    tc += cr;
+    tp += gInfo.gp * cr;
+  });
+  sem.sgpa = tc > 0 ? +(tp / tc).toFixed(2) : 7.5;
+  return sem.sgpa;
+}
+
+/* ─── STUDENT INSPECT & MASTER EDIT MODAL ─── */
 function openStudentModal(roll) {
-  const s = adminStudentsList.find(x => x.roll === roll);
+  const s = (window.SRMS_DATA && window.SRMS_DATA.students && window.SRMS_DATA.students[roll]) || adminStudentsList.find(x => x.roll === roll);
   if (!s) return;
 
   document.getElementById("modTitle").textContent = `Student File — ${s.name} (${s.roll})`;
@@ -2272,19 +2610,42 @@ function openStudentModal(roll) {
   const fees = s.fees || { total: 71200, paid: 71200, due: 0 };
 
   let semTabs = "";
-  (s.semesters || []).forEach(sem => {
-    semTabs += `<div style="margin-top:12px;background:var(--card);border:1px solid var(--border);border-radius:var(--radius-sm);padding:12px">
-      <div style="font-weight:700;margin-bottom:8px;color:var(--accent2)">${sem.name} — SGPA: ${sem.sgpa || 7.5} (Attendance: ${sem.attendance || 85}%)</div>
+  (s.semesters || []).forEach((sem, s_idx) => {
+    const currentSGPA = sem.sgpa || recomputeSemesterSGPA(sem);
+    semTabs += `<div style="margin-top:14px;background:var(--card);border:1px solid var(--border);border-radius:var(--radius-sm);padding:14px">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px">
+        <div style="font-weight:700;color:var(--accent2)">${sem.name || `Semester ${s_idx+1}`} — SGPA: ${currentSGPA} (Attendance: ${sem.attendance || att}%)</div>
+        <button class="action-btn action-btn-cyan" style="font-size:11px;padding:3px 10px" onclick="openAddMarkModal('${s.roll}', ${s_idx})">➕ Add Subject &amp; Marks</button>
+      </div>
       <table style="font-size:11px">
-        <thead><tr><th>Subject</th><th>Internal</th><th>External</th><th>Total</th><th>Grade</th></tr></thead>
+        <thead>
+          <tr>
+            <th>Subject</th>
+            <th>Code</th>
+            <th>Credits</th>
+            <th>Internal</th>
+            <th>External</th>
+            <th>Total</th>
+            <th>Grade</th>
+            <th>Actions</th>
+          </tr>
+        </thead>
         <tbody>
-          ${(sem.subjects || []).map(sub => `
+          ${(sem.subjects || []).map((sub, sub_idx) => `
             <tr>
-              <td>${sub.name}</td>
+              <td><strong>${sub.name}</strong></td>
+              <td class="mono">${sub.code || '—'}</td>
+              <td class="mono text-center">${sub.cr || sub.credits || 4}</td>
               <td class="mono">${sub.int}</td>
               <td class="mono">${sub.ext}</td>
-              <td class="mono fw-600">${(sub.int||0)+(sub.ext||0)}</td>
-              <td><span class="grade-chip ${sub.cls||'gA'}">${sub.g||'A'}</span></td>
+              <td class="mono fw-600">${(Number(sub.int)||0)+(Number(sub.ext)||0)}</td>
+              <td><span class="grade-chip ${sub.cls||'gA'}">${sub.g||sub.grade||'A'}</span></td>
+              <td>
+                <div style="display:flex;gap:4px">
+                  <button class="action-btn action-btn-cyan" style="padding:2px 7px;font-size:10px" title="Edit Subject Marks" onclick="openEditMarkModal('${s.roll}', ${s_idx}, ${sub_idx})">✏️</button>
+                  <button class="action-btn action-btn-red" style="padding:2px 7px;font-size:10px" title="Delete Mark Entry" onclick="handleDeleteMark('${s.roll}', ${s_idx}, ${sub_idx})">🗑️</button>
+                </div>
+              </td>
             </tr>
           `).join('')}
         </tbody>
@@ -2297,6 +2658,7 @@ function openStudentModal(roll) {
       <div>
         ${infoPair("Enrollment No.", s.enrollment || s.roll)}
         ${infoPair("Full Name", s.name)}
+        ${infoPair("Date of Birth (DOB)", `<span class="mono" style="color:var(--accent2);font-weight:600">${s.dob || '2005-01-01'}</span>`)}
         ${infoPair("Father's Name", s.father_name || '—')}
         ${infoPair("Mother's Name", s.mother_name || '—')}
         ${infoPair("Email", s.email)}
@@ -2315,13 +2677,17 @@ function openStudentModal(roll) {
     </div>
 
     <div style="font-size:12px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:0.08em;margin-top:16px">
-      Semester Performance &amp; Evaluation
+      Semester Performance &amp; Evaluation (Faculty Control)
     </div>
     ${semTabs}
 
-    <div style="display:flex;justify-content:flex-end;gap:10px;margin-top:20px;padding-top:14px;border-top:1px solid var(--border)">
-      <button class="action-btn action-btn-secondary" onclick="closeStudentModal()">Close Window</button>
-      <button class="action-btn action-btn-primary" onclick="quickUpdateAttendance('${s.roll}')">Update Attendance (+5%)</button>
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-top:20px;padding-top:14px;border-top:1px solid var(--border)">
+      <button class="action-btn action-btn-red" style="background:rgba(240,82,82,0.15);border-color:var(--red);color:var(--red)" onclick="handleDeleteStudent('${s.roll}')">🗑️ Delete Student Record</button>
+      <div style="display:flex;gap:10px">
+        <button class="action-btn action-btn-secondary" onclick="closeStudentModal()">Close Window</button>
+        <button class="action-btn action-btn-cyan" onclick="openEditStudentModal('${s.roll}')">✏️ Edit Details</button>
+        <button class="action-btn action-btn-primary" onclick="quickUpdateAttendance('${s.roll}')">Update Attendance (+5%)</button>
+      </div>
     </div>
   `;
 
@@ -2333,21 +2699,325 @@ function closeStudentModal() {
 }
 
 function quickUpdateAttendance(roll) {
-  const s = adminStudentsList.find(x => x.roll === roll);
+  const s = (window.SRMS_DATA && window.SRMS_DATA.students && window.SRMS_DATA.students[roll]) || adminStudentsList.find(x => x.roll === roll);
   if (!s) return;
   s.attendance = Math.min(100, (s.attendance || 85) + 5);
   if (db) {
     try {
       db.run("UPDATE students SET attendance = ? WHERE roll_no = ?", [s.attendance, roll]);
-      console.log(`Updated attendance in SQLite for roll ${roll}`);
-    } catch(e) { console.warn(e); }
+    } catch(e) {}
   }
+  syncLiveStudentPortal(roll);
   openStudentModal(roll);
-  renderAdminTable();
   alert(`Attendance updated to ${s.attendance}% for student ${s.name}`);
 }
 
-/* ─── ADD NEW STUDENT MODAL ──────────────── */
+/* ─── TEACHER: EDIT STUDENT DETAILS ──────── */
+function openEditStudentModal(roll) {
+  const s = (window.SRMS_DATA && window.SRMS_DATA.students && window.SRMS_DATA.students[roll]) || adminStudentsList.find(x => x.roll === roll);
+  if (!s) return;
+
+  document.getElementById("edit_roll").value = s.roll;
+  document.getElementById("edit_roll_display").value = s.roll;
+  document.getElementById("edit_name").value = s.name;
+  document.getElementById("edit_dob").value = s.dob || "2005-01-01";
+  document.getElementById("edit_course").value = s.course;
+  document.getElementById("edit_sec").value = s.section || "A";
+  document.getElementById("edit_email").value = s.email || "";
+  document.getElementById("edit_city").value = s.city || "";
+  document.getElementById("edit_attendance").value = s.attendance || 85;
+  document.getElementById("edit_fee_total").value = s.fees ? s.fees.total : 71200;
+  document.getElementById("edit_fee_paid").value = s.fees ? s.fees.paid : 71200;
+  document.getElementById("edit_fee_due").value = s.fees ? s.fees.due : 0;
+
+  document.getElementById("editStudentModal").classList.add("show");
+}
+
+function closeEditStudentModal() {
+  document.getElementById("editStudentModal").classList.remove("show");
+}
+
+async function handleSaveStudentEdit(e) {
+  e.preventDefault();
+  const roll = document.getElementById("edit_roll").value;
+  const s = (window.SRMS_DATA && window.SRMS_DATA.students && window.SRMS_DATA.students[roll]) || adminStudentsList.find(x => x.roll === roll);
+  if (!s) return;
+
+  const newDob = document.getElementById("edit_dob").value;
+  s.name = document.getElementById("edit_name").value.trim();
+  s.dob = newDob;
+  s.course = document.getElementById("edit_course").value.trim();
+  s.section = document.getElementById("edit_sec").value.trim().toUpperCase() || "A";
+  s.email = document.getElementById("edit_email").value.trim();
+  s.city = document.getElementById("edit_city").value.trim();
+  s.attendance = Math.min(100, Math.max(0, parseInt(document.getElementById("edit_attendance").value) || 85));
+
+  const total = parseFloat(document.getElementById("edit_fee_total").value) || 71200;
+  const paid  = parseFloat(document.getElementById("edit_fee_paid").value) || 0;
+  const due   = Math.max(0, total - paid);
+  s.fees = { ...(s.fees || {}), total, paid, due };
+
+  // If DOB changed, update default password hash
+  if (newDob) {
+    s.pwd_hash = await sha256(newDob + s.salt);
+  }
+
+  // Update in SQLite
+  if (db) {
+    try {
+      db.run(`UPDATE students SET name = ?, dob = ?, course_name = ?, section = ?, email = ?, city = ?, attendance = ?, fees_total = ?, fees_paid = ?, fees_due = ?, password_hash = ? WHERE roll_no = ?`,
+        [s.name, s.dob, s.course, s.section, s.email, s.city, s.attendance, total, paid, due, s.pwd_hash, roll]
+      );
+    } catch(err) { console.warn("SQLite update error:", err); }
+  }
+
+  syncLiveStudentPortal(roll);
+  closeEditStudentModal();
+  openStudentModal(roll);
+  alert(`Student record for ${s.name} (${roll}) updated and synced successfully!`);
+}
+
+/* ─── TEACHER: DELETE STUDENT RECORD ─────── */
+function handleDeleteStudent(roll) {
+  const s = (window.SRMS_DATA && window.SRMS_DATA.students && window.SRMS_DATA.students[roll]) || adminStudentsList.find(x => x.roll === roll);
+  if (!s) return;
+
+  if (!confirm(`⚠️ PERMANENT RECORD DELETION:\nAre you sure you want to delete student ${s.name} (Roll: ${roll})?\nAll grades, attendance, and records will be permanently removed.`)) {
+    return;
+  }
+
+  // Remove from state
+  if (window.SRMS_DATA && window.SRMS_DATA.students) {
+    delete window.SRMS_DATA.students[roll];
+  }
+  adminStudentsList = adminStudentsList.filter(x => x.roll !== roll);
+
+  // Remove from SQLite
+  if (db) {
+    try {
+      db.run("DELETE FROM students WHERE roll_no = ?", [roll]);
+      db.run("DELETE FROM marks WHERE roll_no = ?", [roll]);
+      db.run("DELETE FROM fee_transactions WHERE roll_no = ?", [roll]);
+    } catch(err) { console.warn("SQLite delete error:", err); }
+  }
+
+  closeStudentModal();
+  syncLiveStudentPortal(roll);
+  alert(`Student ${s.name} (Roll: ${roll}) has been deleted from the database.`);
+}
+
+/* ─── TEACHER: MARKS MANAGEMENT ──────────── */
+function openAddMarkModal(roll, semIdx) {
+  document.getElementById("marksModalTitle").textContent = `➕ Add Subject Marks — Semester ${semIdx + 1}`;
+  document.getElementById("mark_roll").value = roll;
+  document.getElementById("mark_sem_idx").value = semIdx;
+  document.getElementById("mark_sub_idx").value = "";
+  document.getElementById("mark_sub_name").value = "";
+  document.getElementById("mark_sub_code").value = "";
+  document.getElementById("mark_sub_cr").value = "4";
+  document.getElementById("mark_int").value = "30";
+  document.getElementById("mark_ext").value = "45";
+  document.getElementById("marksEditModal").classList.add("show");
+}
+
+function openEditMarkModal(roll, semIdx, subIdx) {
+  const s = (window.SRMS_DATA && window.SRMS_DATA.students && window.SRMS_DATA.students[roll]) || adminStudentsList.find(x => x.roll === roll);
+  if (!s || !s.semesters || !s.semesters[semIdx]) return;
+  const sub = s.semesters[semIdx].subjects[subIdx];
+  if (!sub) return;
+
+  document.getElementById("marksModalTitle").textContent = `✏️ Edit Subject Marks — ${sub.name}`;
+  document.getElementById("mark_roll").value = roll;
+  document.getElementById("mark_sem_idx").value = semIdx;
+  document.getElementById("mark_sub_idx").value = subIdx;
+  document.getElementById("mark_sub_name").value = sub.name;
+  document.getElementById("mark_sub_code").value = sub.code || "";
+  document.getElementById("mark_sub_cr").value = sub.cr || sub.credits || 4;
+  document.getElementById("mark_int").value = sub.int !== undefined ? sub.int : 30;
+  document.getElementById("mark_ext").value = sub.ext !== undefined ? sub.ext : 45;
+  document.getElementById("marksEditModal").classList.add("show");
+}
+
+function closeMarksModal() {
+  document.getElementById("marksEditModal").classList.remove("show");
+}
+
+function handleSaveMarks(e) {
+  e.preventDefault();
+  const roll = document.getElementById("mark_roll").value;
+  const semIdx = parseInt(document.getElementById("mark_sem_idx").value) || 0;
+  const subIdxStr = document.getElementById("mark_sub_idx").value;
+  const isEdit = subIdxStr !== "";
+
+  const s = (window.SRMS_DATA && window.SRMS_DATA.students && window.SRMS_DATA.students[roll]) || adminStudentsList.find(x => x.roll === roll);
+  if (!s) return;
+  if (!s.semesters) s.semesters = [{ name: "Semester 1", attendance: s.attendance || 85, subjects: [] }];
+  while (s.semesters.length <= semIdx) {
+    s.semesters.push({ name: `Semester ${s.semesters.length + 1}`, attendance: s.attendance || 85, subjects: [] });
+  }
+
+  const name = document.getElementById("mark_sub_name").value.trim();
+  const code = document.getElementById("mark_sub_code").value.trim().toUpperCase();
+  const cr = parseInt(document.getElementById("mark_sub_cr").value) || 4;
+  const intM = parseInt(document.getElementById("mark_int").value) || 0;
+  const extM = parseInt(document.getElementById("mark_ext").value) || 0;
+  const tot = intM + extM;
+  const gInfo = getGradeFromScore(tot);
+
+  const subObj = {
+    name,
+    code,
+    cr,
+    credits: cr,
+    int: intM,
+    ext: extM,
+    total: tot,
+    grade: gInfo.grade,
+    g: gInfo.grade,
+    gp: gInfo.gp,
+    cls: gInfo.cls
+  };
+
+  const sem = s.semesters[semIdx];
+  if (isEdit) {
+    const subIdx = parseInt(subIdxStr);
+    sem.subjects[subIdx] = subObj;
+  } else {
+    sem.subjects.push(subObj);
+  }
+
+  recomputeSemesterSGPA(sem);
+
+  // Update in SQLite
+  if (db) {
+    try {
+      if (isEdit) {
+        db.run(`UPDATE marks SET subject_name = ?, internal = ?, external = ?, total = ?, grade = ?, grade_point = ?, credits = ? WHERE roll_no = ? AND subject_code = ? AND sem_no = ?`,
+          [name, intM, extM, tot, gInfo.grade, gInfo.gp, cr, roll, code, semIdx + 1]
+        );
+      } else {
+        db.run(`INSERT INTO marks (roll_no, sem_no, subject_code, subject_name, internal, external, total, max_marks, pct, grade, grade_point, credits, status) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+          [roll, semIdx + 1, code, name, intM, extM, tot, 100, tot, gInfo.grade, gInfo.gp, cr, tot >= 40 ? "Pass" : "Fail"]
+        );
+      }
+    } catch(err) { console.warn("SQLite marks error:", err); }
+  }
+
+  syncLiveStudentPortal(roll);
+  closeMarksModal();
+  openStudentModal(roll);
+  alert(`Marks for ${name} (${code}) saved and SGPA recomputed successfully!`);
+}
+
+function handleDeleteMark(roll, semIdx, subIdx) {
+  const s = (window.SRMS_DATA && window.SRMS_DATA.students && window.SRMS_DATA.students[roll]) || adminStudentsList.find(x => x.roll === roll);
+  if (!s || !s.semesters || !s.semesters[semIdx]) return;
+  const sem = s.semesters[semIdx];
+  const sub = sem.subjects[subIdx];
+  if (!sub) return;
+
+  if (!confirm(`Delete marks entry for ${sub.name} (${sub.code})?`)) return;
+
+  const code = sub.code;
+  sem.subjects.splice(subIdx, 1);
+  recomputeSemesterSGPA(sem);
+
+  if (db) {
+    try {
+      db.run("DELETE FROM marks WHERE roll_no = ? AND subject_code = ? AND sem_no = ?", [roll, code, semIdx + 1]);
+    } catch(err) {}
+  }
+
+  syncLiveStudentPortal(roll);
+  openStudentModal(roll);
+}
+
+/* ─── STUDENT SELF-REGISTRATION ──────────── */
+function openStudentRegisterModal() {
+  document.getElementById("studentRegisterModal").classList.add("show");
+}
+
+function closeStudentRegisterModal() {
+  document.getElementById("studentRegisterModal").classList.remove("show");
+}
+
+async function handleStudentSelfRegister(e) {
+  e.preventDefault();
+  const name = document.getElementById("reg_name").value.trim();
+  const roll = document.getElementById("reg_roll").value.trim();
+  const dob  = document.getElementById("reg_dob").value;
+  const course = document.getElementById("reg_course").value;
+  const sec = document.getElementById("reg_sec").value.trim().toUpperCase() || 'A';
+  const email = document.getElementById("reg_email").value.trim() || `${name.toLowerCase().replace(/\s+/g, '')}@tmu.ac.in`;
+  const city = document.getElementById("reg_city").value.trim() || 'Moradabad';
+
+  // Strict Unique Roll Number Validation
+  if (isRollNumberTaken(roll)) {
+    alert(`⚠️ Registration Error:\nRoll Number "${roll}" is already registered in the system!\nPlease enter a unique roll number.`);
+    return;
+  }
+
+  // Default Password is DOB
+  const salt = "salt_" + roll + "_reg";
+  const pwdHash = await sha256(dob + salt);
+
+  const newStudent = {
+    roll: roll,
+    enrollment: "TCA" + roll,
+    name: name,
+    initials: name.split(' ').map(w=>w[0]).join('').slice(0,2).toUpperCase(),
+    course: course,
+    section: sec,
+    email: email,
+    phone: "+91 98*** ***000",
+    dob: dob,
+    city: city,
+    state: "UP",
+    address: `${city}, UP`,
+    attendance: 85,
+    percentage: 75.0,
+    status: "Student",
+    pwd_hash: pwdHash,
+    salt: salt,
+    semesters: [
+      { name: "Semester 1", sgpa: 7.8, attendance: 85, subjects: [
+        { name: "Programming Fundamentals", code: "CS101", int: 32, ext: 45, max: 100, cr: 4, g: "A", gp: 8 },
+        { name: "Mathematics I", code: "MA101", int: 30, ext: 42, max: 100, cr: 4, g: "A", gp: 8 },
+        { name: "Professional Communication", code: "EN101", int: 35, ext: 50, max: 100, cr: 2, g: "A+", gp: 9 }
+      ]}
+    ],
+    fees: { total: 71200, paid: 71200, due: 0, txns: [
+      { date: "01 Feb 2025", type: "Admission & Tuition Fee", amount: 71200, receipt: "REC-2025-REG", status: "Paid" }
+    ]}
+  };
+
+  if (!window.SRMS_DATA.students) window.SRMS_DATA.students = {};
+  window.SRMS_DATA.students[roll] = newStudent;
+  if (!window.SRMS_DATA.enrollment_map) window.SRMS_DATA.enrollment_map = {};
+  window.SRMS_DATA.enrollment_map["TCA" + roll] = roll;
+
+  adminStudentsList.unshift(newStudent);
+
+  if (db) {
+    try {
+      db.run(`INSERT INTO students (roll_no, enrollment_no, name, course_name, section, email, phone, dob, city, state, address, attendance, percentage, fees_total, fees_paid, fees_due, status, password_hash, salt) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+        [roll, newStudent.enrollment, name, course, sec, email, newStudent.phone, dob, city, "UP", newStudent.address, 85, 75.0, 71200, 71200, 0, "Student", pwdHash, salt]
+      );
+    } catch(err) { console.warn("SQLite insert error:", err); }
+  }
+
+  syncLiveStudentPortal(roll);
+  closeStudentRegisterModal();
+
+  // Switch to Student tab and autofill credentials
+  switchLoginRole('student');
+  document.getElementById("inputRoll").value = roll;
+  document.getElementById("inputPass").value = dob;
+
+  alert(`🎉 Registration Successful!\nWelcome, ${name} (Roll: ${roll}).\nYour default password is your Date of Birth (${dob}).\nYou can now sign in!`);
+}
+
+/* ─── TEACHER: REGISTER NEW STUDENT ──────── */
 function openAddStudentModal() {
   document.getElementById("addStudentModal").classList.add("show");
 }
@@ -2359,15 +3029,21 @@ async function handleCreateStudent(e) {
   e.preventDefault();
   const name = document.getElementById("new_name").value.trim();
   const roll = document.getElementById("new_roll").value.trim();
+  const dob  = document.getElementById("new_dob").value;
   const course = document.getElementById("new_course").value;
   const sec = document.getElementById("new_sec").value.trim().toUpperCase() || 'A';
   const email = document.getElementById("new_email").value.trim() || `${name.toLowerCase().replace(/\s+/g, '')}@tmu.ac.in`;
-  const phone = document.getElementById("new_phone").value.trim() || '9876543210';
+  const phone = document.getElementById("new_phone").value.trim() || '+91 98*** ***123';
   const city = document.getElementById("new_city").value.trim() || 'Moradabad';
-  const pass = document.getElementById("new_pass").value.trim() || 'student123';
 
-  const salt = "salt_" + roll + "_new";
-  const pwdHash = await sha256(pass + salt);
+  // Strict Unique Roll Number Validation
+  if (isRollNumberTaken(roll)) {
+    alert(`⚠️ Validation Error:\nRoll Number "${roll}" already exists in the university database!\nRoll numbers must be unique.`);
+    return;
+  }
+
+  const salt = "salt_" + roll + "_teacher";
+  const pwdHash = await sha256(dob + salt);
 
   const newStudent = {
     roll: roll,
@@ -2378,8 +3054,10 @@ async function handleCreateStudent(e) {
     section: sec,
     email: email,
     phone: phone,
+    dob: dob,
     city: city,
     state: "UP",
+    address: `${city}, UP`,
     attendance: 88,
     percentage: 75.0,
     status: "Student",
@@ -2393,21 +3071,28 @@ async function handleCreateStudent(e) {
       ]}
     ],
     fees: { total: 71200, paid: 71200, due: 0, txns: [
-      { date: "01 Feb 2025", type: "Admission & Tuition Fee", amount: 71200, receipt: "REC-2025-NEW", status: "Paid" }
+      { date: "01 Feb 2025", type: "Admission & Tuition Fee", amount: 71200, receipt: "REC-2025-FAC", status: "Paid" }
     ]}
   };
 
+  if (!window.SRMS_DATA.students) window.SRMS_DATA.students = {};
+  window.SRMS_DATA.students[roll] = newStudent;
+  if (!window.SRMS_DATA.enrollment_map) window.SRMS_DATA.enrollment_map = {};
+  window.SRMS_DATA.enrollment_map["TCA" + roll] = roll;
+
   adminStudentsList.unshift(newStudent);
+
   if (db) {
     try {
-      db.run(`INSERT INTO students (roll_no, enrollment_no, name, course_name, section, email, phone, city, state, attendance, percentage, fees_total, fees_paid, fees_due, status, password_hash, salt) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
-      [roll, newStudent.enrollment, name, course, sec, email, phone, city, "UP", 88, 75.0, 71200, 71200, 0, "Student", pwdHash, salt]);
+      db.run(`INSERT INTO students (roll_no, enrollment_no, name, course_name, section, email, phone, dob, city, state, address, attendance, percentage, fees_total, fees_paid, fees_due, status, password_hash, salt) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+        [roll, newStudent.enrollment, name, course, sec, email, phone, dob, city, "UP", newStudent.address, 88, 75.0, 71200, 71200, 0, "Student", pwdHash, salt]
+      );
     } catch(err) { console.warn("SQLite insert error:", err); }
   }
 
+  syncLiveStudentPortal(roll);
   closeAddStudentModal();
-  applyAdminFilters();
-  alert(`Student ${name} (Roll: ${roll}) registered into SQLite database!`);
+  alert(`Student ${name} (Roll: ${roll}) registered into database with default password as DOB (${dob})!`);
 }
 
 /* ─── LIVE SQL QUERY EXECUTION ───────────── */

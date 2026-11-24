@@ -111,13 +111,14 @@ flowchart TD
         F --> I["Financial & Attendance Analytics"]
     end
 
-    subgraph Storage [Database Layer]
+    subgraph Storage [Database & Sync Layer]
         J[("students.db (SQLite3 Relational Store)")]
-        K["schema.sql (DDL/DML Ledger)"]
-        L["data.js (Zero-Plaintext Encrypted Bundle)"]
+        K["localStorage (Reactive Real-Time Client Store)"]
+        L["data.js (Zero-Plaintext Masked Data Bundle)"]
     end
 
     F <--> J
+    F <--> K
     F <--> L
 ```
 
@@ -130,12 +131,26 @@ The portal is deployed live and fully functional on **GitHub Pages**:
 
 ### Demo Credentials
 
-| Role | Username / Identifier | Password | Access Details | Direct Quick-Link |
+| Role | Username / Identifier | Password (DOB) | Access Details | Direct Quick-Link |
 | :--- | :--- | :--- | :--- | :--- |
-| **Faculty Master** | `admin` | `Teacher@2025` | Master access to all 1,461 student files &amp; SQL Terminal | [Open Faculty Master](https://tushar-chauhan9627.github.io/Student-Result-Management-System/#demo-admin) |
-| **Student** | `2468532` | `01062005` | Sanjay Kumar (B.C.A., Section C) | [Open Sanjay File](https://tushar-chauhan9627.github.io/Student-Result-Management-System/#demo-student) |
-| **Student** | `2468297` | `27052007` | Manmohan Singh (B.C.A., Section C) | [Open Manmohan File](https://tushar-chauhan9627.github.io/Student-Result-Management-System/#demo-results) |
-| **Student** | `2468497` | `pass2023` | Ritik Singh (B.Tech Mechanical, Section A) | [Open Ritik File](https://tushar-chauhan9627.github.io/Student-Result-Management-System/#demo-student) |
+| **Faculty Master** | `admin` | `Teacher@2025` | Master access: Student CRUD, Marks Management &amp; Live SQL Terminal | [Open Faculty Master](https://tushar-chauhan9627.github.io/Student-Result-Management-System/#demo-admin) |
+| **Student** | `2468532` | `2005-06-01` | Sanjay Kumar (B.C.A., Section C · DOB Default Password) | [Open Sanjay File](https://tushar-chauhan9627.github.io/Student-Result-Management-System/#demo-student) |
+| **Student** | `2468297` | `2007-05-27` | Manmohan Singh (B.C.A., Section C · DOB Default Password) | [Open Manmohan File](https://tushar-chauhan9627.github.io/Student-Result-Management-System/#demo-results) |
+| **Student** | `2468497` | `2005-08-15` | Ritik Singh (B.Tech Mechanical, Section A · DOB Default Password) | [Open Ritik File](https://tushar-chauhan9627.github.io/Student-Result-Management-System/#demo-student) |
+
+> [!NOTE]
+> **Default Student Password:** Every student's default password is their Date of Birth. The login engine automatically accepts standard ISO (`YYYY-MM-DD`), numeric (`DDMMYYYY`), and delimited (`DD-MM-YYYY` or `DD/MM/YYYY`) formats.
+
+---
+
+## 🚀 Key System Features & Capabilities
+
+- **🎓 Student Login & Self-Registration:** Students can sign in using their unique Roll Number and Date of Birth (DOB) as their default password, or self-register with automatic DOB credential provisioning.
+- **🆔 Strictly Enforced Unique Roll Numbers:** Collision detection at database, memory, and UI levels guarantees zero duplicate roll numbers.
+- **👨‍🏫 Teacher Administration & Permissions:** Authorized faculty can add new students, edit/correct student profiles, and permanently delete records with complete relational cascade.
+- **📊 Marks & Grade Management:** Teachers can dynamically enter, edit, and delete semester subject marks with instant automatic recalculation of Total, Grade, Grade Points, and semester SGPA.
+- **⚡ Real-Time Portal Sync:** Any changes made by a teacher (attendance updates, grade entries, fee dues, student profile corrections) reflect live on the student portal without needing a page reload.
+- **🛡️ Inspect-Mode Privacy Guard:** Real student phone numbers and residential addresses are masked and sanitised against browser DevTools scraping, and all passwords use salted SHA-256 cryptographic verification.
 
 ---
 
