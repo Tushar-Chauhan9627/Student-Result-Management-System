@@ -1,11 +1,11 @@
 <div align="center">
 
-  <img src="https://raw.githubusercontent.com/Tushar-Chauhan9627/Student-Result-Management-System/main/assets/mockups/hero_banner.png" alt="TMU CampusConnect Banner" width="100%" />
+  <img src="https://raw.githubusercontent.com/Tushar-Chauhan9627/Student-Result-Management-System/main/assets/mockups/hero_banner.png" alt="Student Result & Academic Management System Banner" width="100%" />
 
   <br/><br/>
 
-  <h1>TMU CampusConnect 🎓</h1>
-  <p><strong>Next-Gen, High-Performance Student Result &amp; Academic Management Portal</strong></p>
+  <h1>Student Result &amp; Academic Management System 🎓</h1>
+  <p><strong>Next-Gen, High-Performance Academic Intelligence &amp; Result Management Portal</strong></p>
   <p><em>Engineered for College of Computing Sciences &amp; Information Technology (CCSIT), Teerthanker Mahaveer University</em></p>
 
   <p>
@@ -32,9 +32,9 @@
 
 ## 📌 Overview
 
-**TMU CampusConnect** is an enterprise-grade academic intelligence and Student Result Management System (SRMS) engineered for **Teerthanker Mahaveer University (TMU)**. Developed at the College of Computing Sciences and Information Technology (CCSIT), it provides a unified, secure portal for students and faculty.
+**Student Result & Academic Management System** is an enterprise-grade academic intelligence and examination portal engineered for **Teerthanker Mahaveer University (TMU)**. Developed at the College of Computing Sciences and Information Technology (CCSIT), it provides a unified, secure portal for students and faculty.
 
-Unlike conventional university web portals that suffer from bloated server roundtrips, fragmented PDF records, and insecure client-side implementations, TMU CampusConnect couples an **embedded in-memory SQLite relational engine (via WebAssembly)** with a dual-role access architecture:
+Unlike conventional university web portals that suffer from bloated server roundtrips, fragmented PDF records, and insecure client-side implementations, this system couples an **embedded in-memory SQLite relational engine (via WebAssembly)** with a dual-role access architecture:
 1. **Student Academic Portal:** Private dashboard for semester grades, SGPA/CGPA progression, fee transaction ledgers, and attendance metrics.
 2. **Faculty Master Console:** Comprehensive administrative control with real-time student filtering across 1,461 records, instant grade editing, and a live **Interactive SQL Terminal** for complex academic queries.
 
@@ -51,7 +51,7 @@ Universities face critical bottlenecks when deploying and scaling legacy result 
 
 ## 💡 The Solution
 
-TMU CampusConnect resolves these challenges through a modern cryptographic and localized data architecture:
+The **Student Result & Academic Management System** resolves these challenges through a modern cryptographic and localized data architecture:
 
 - **Zero-Knowledge Cryptographic Hashing:** Passwords are never stored in plaintext anywhere. Verification uses per-user salted SHA-256 hashes computed via the browser's hardware-accelerated Web Crypto API.
 - **Embedded WebAssembly SQLite Engine:** The entire relational database runs locally in the client or server, executing complex relational joins, aggregations, and filters at sub-millisecond speeds.
@@ -126,11 +126,11 @@ flowchart TD
 ## 🔑 Live Demo & Access Credentials
 
 The portal is deployed live and fully functional on **GitHub Pages**:
-👉 **[Launch TMU CampusConnect Portal](https://tushar-chauhan9627.github.io/Student-Result-Management-System/)**
+👉 **[Launch Student Result & Academic Management System](https://tushar-chauhan9627.github.io/Student-Result-Management-System/)**
 
 ### Demo Credentials
 
-| Role | Username / Identifier | Password | Description | Quick Demo Link |
+| Role | Username / Identifier | Password | Access Details | Direct Quick-Link |
 | :--- | :--- | :--- | :--- | :--- |
 | **Faculty Master** | `admin` | `Teacher@2025` | Master access to all 1,461 student files &amp; SQL Terminal | [Open Faculty Master](https://tushar-chauhan9627.github.io/Student-Result-Management-System/#demo-admin) |
 | **Student** | `2468532` | `01062005` | Sanjay Kumar (B.C.A., Section C) | [Open Sanjay File](https://tushar-chauhan9627.github.io/Student-Result-Management-System/#demo-student) |
